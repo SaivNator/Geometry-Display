@@ -10,6 +10,7 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <atomic>
 
 #include <SFML\Graphics.hpp>
 
@@ -28,10 +29,8 @@ namespace GeometryDisplay {
 		sf::RenderWindow window;
 
 		std::condition_variable window_thread_cv;
-		bool window_thread_running = true;
-		bool window_thread_update_waiting = false;
-		std::thread window_thread;
-		std::mutex window_thread_mutex;
+		
+		std::atomic<bool> running = true;
 
 		std::vector<Shape> shape_vec;
 
@@ -39,7 +38,8 @@ namespace GeometryDisplay {
 
 		sf::VertexArray border_frame_vertex_array;
 
-		void inputLoopFunc();				//for window_thread
+		std::thread window_thread;
+		void windowHandler();				//for window_thread
 		
 	public:
 		//Window();							//constructor
@@ -48,11 +48,22 @@ namespace GeometryDisplay {
 		void appendShapeVec(std::vector<Shape> & vec);
 		void clearShapeVec();
 
+		/*
+		Wait for window_thread to close
+		This will block if the thread is joinable, else nothing happens
+		*/
+		void join();
 
-		void init();						//start thread
-		void show();						//show window
-		void hide();						//hide window
-		void close();						//clone thread and free memory
+		/*
+		Init display
+		*/
+		void create();										
+
+		/*
+		Close display
+		Kill thread
+		*/
+		void close();						
 	};
 
 	struct TriangleShape : public Shape {
