@@ -4,9 +4,12 @@
 #ifndef GeometryDisplay_HEADER
 #define GeometryDisplay_HEADER
 
+#include <iostream>
+#include <string>
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <condition_variable>
 
 #include <SFML\Graphics.hpp>
 
@@ -21,10 +24,15 @@ namespace GeometryDisplay {
 	
 	class Window {
 	private:
-		sf::RenderWindow window;
-		std::thread window_thread;
 
-		std::mutex shape_vec_mutex;
+		sf::RenderWindow window;
+
+		std::condition_variable window_thread_cv;
+		bool window_thread_running = true;
+		bool window_thread_update_waiting = false;
+		std::thread window_thread;
+		std::mutex window_thread_mutex;
+
 		std::vector<Shape> shape_vec;
 
 		sf::VertexArray triangle_vertex_array_vec;
