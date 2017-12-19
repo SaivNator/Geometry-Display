@@ -17,6 +17,10 @@ int main() {
 
 	display.create();
 
+	GeometryDisplay::PolygonShape circle(wykobi::make_polygon<float>(wykobi::make_circle<float>(100, 100, 50), 10));
+
+	display.addShape(circle);
+
 	
 
 	display.join();

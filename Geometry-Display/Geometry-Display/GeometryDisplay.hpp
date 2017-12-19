@@ -11,42 +11,78 @@
 #include <mutex>
 #include <condition_variable>
 #include <atomic>
+#include <functional>
 
 #include <SFML\Graphics.hpp>
 
 #include <wykobi.hpp>
+#include <wykobi_algorithm.hpp>
 
 namespace GeometryDisplay {
 	
 	struct Shape {
-		std::vector<sf::Vertex> verticies;
-		virtual std::vector<sf::Vertex> & getVerticies() = 0;
+		std::string name;
+		sf::Color color = sf::Color::White;
+		bool outer_line = false;
+		virtual void appendVertex(sf::VertexArray & vertex_arr) = 0;
 	};
 	
 	class Window {
 	private:
-
 		sf::RenderWindow window;
 
-		std::condition_variable window_thread_cv;
+		std::atomic<int> update_interval = 50;		//in ms
+		std::atomic<int> window_width = 500;		//in px
+		std::atomic<int> window_height = 500;		//in px
+		std::atomic<bool> update_settings = false;
+		std::atomic<bool> update_frame = false;
 		
 		std::atomic<bool> running = true;
 
-		std::vector<Shape> shape_vec;
-
-		sf::VertexArray triangle_vertex_array_vec;
-
-		sf::VertexArray border_frame_vertex_array;
+		std::vector<std::reference_wrapper<Shape>> shape_vec;
+		sf::VertexArray shape_vertex_array = sf::VertexArray(sf::Triangles);
 
 		std::thread window_thread;
-		void windowHandler();				//for window_thread
+
+		/*
+		Window thread function
+		*/
+		void windowHandler();
+
+		/*
+		Renders and displays next frame
+		Must be called from window_thread
+		*/
+		void renderFrame();
 		
 	public:
 		//Window();							//constructor
 
-		void appendShapeVec(Shape & shape);
-		void appendShapeVec(std::vector<Shape> & vec);
+		void addShape(Shape & shape);
+		//Shape* addShape(wykobi::polygon<float, 2> poly);
+		//std::vector<Shape*> addShape(std::vector<wykobi::polygon<float, 2>> & vec);
 		void clearShapeVec();
+
+		/*
+		Set update interval
+		In milliseconds
+		*/
+		void setUpdateInterval(int t);
+
+		/*
+		Set window size
+		*/
+		void setSize(int w, int h);
+
+		/*
+		Get window width
+		*/
+		int getWindowWidth();
+
+		/*
+		Get window height
+		*/
+		int getWindowHeight();
 
 		/*
 		Wait for window_thread to close
@@ -67,12 +103,14 @@ namespace GeometryDisplay {
 	};
 
 	struct TriangleShape : public Shape {
+		wykobi::triangle<float, 2> triangle;
 		TriangleShape(float x0, float y0, float x1, float y1, float x2, float y2);
 		TriangleShape(std::vector<sf::Vector2f> & vec);
 	};
 	struct PolygonShape : public Shape {
-		PolygonShape(std::vector<sf::Vector2f> & vec);
-		PolygonShape(std::vector<wykobi::point2d<float>> & vec);
+		wykobi::polygon<float, 2> polygon;
+		PolygonShape(wykobi::polygon<float, 2> poly);
+		void appendVertex(sf::VertexArray & vertex_arr) override;
 	};
 
 }
