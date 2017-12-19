@@ -17,10 +17,11 @@ int main() {
 
 	display.create();
 
-	GeometryDisplay::PolygonShape circle(wykobi::make_polygon<float>(wykobi::make_circle<float>(100, 100, 50), 10));
+	//display.addShape(wykobi::make_polygon<float>(wykobi::make_circle<float>(100, 100, 50), 10));
 
-	display.addShape(circle);
+	wykobi::segment<float, 2> seg = wykobi::make_segment(10.f, 10.f, 321.f, 100.f);
 
+	display.addShape(seg);
 	
 
 	display.join();
