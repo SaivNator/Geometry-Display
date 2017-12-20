@@ -1,4 +1,4 @@
-//Author: Sivert Andresen Cubedo
+
 /*
 HEAVLY INSPIRED BY: 
 	https://github.com/SFML/SFML/blob/master/src/SFML/Graphics/Text.cpp

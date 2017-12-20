@@ -1,4 +1,4 @@
-//Author: Sivert Andresen Cubedo
+
 /*
 HEAVLY INSPIRED BY:
 https://github.com/SFML/SFML/blob/master/src/SFML/Graphics/Text.cpp
@@ -467,7 +467,9 @@ namespace GeometryDisplay {
 	void TextShape::appendVertex(sf::VertexArray & vertex_arr) {
 		ensureGeometryUpdate();
 		for (std::size_t i = 0; i < m_vertices.getVertexCount(); ++i) {
-			vertex_arr.append(m_vertices[i]);
+			sf::Vertex temp = m_vertices[i];
+			temp.position = getTransform().transformPoint(temp.position);
+			vertex_arr.append(temp);
 		}
 	}
 
