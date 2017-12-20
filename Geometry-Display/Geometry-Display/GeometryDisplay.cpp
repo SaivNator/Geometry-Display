@@ -2,6 +2,8 @@
 
 #include "GeometryDisplay.hpp"
 
+#include <cmath>
+
 using namespace GeometryDisplay;
 
 void Window::create() {
@@ -43,19 +45,33 @@ void Window::windowHandler() {
 	window.close();
 }
 
+void Window::renderUI() {
+	
+}
+
 void Window::renderFrame() {
 	window.clear();
+
+	//render shapes
+	shape_vec_mutex.lock();
 	shape_vertex_array.clear();
 	for (auto it = shape_vec.begin(); it != shape_vec.end(); ++it) {
 		(*it)->appendVertex(shape_vertex_array);
 	}
+	shape_vec_mutex.unlock();
+
+	
+
+
 	window.draw(shape_vertex_array);
 	window.display();
 }
 
-void Window::addShape(Shape & shape) {
-	shape_vec.push_back(std::unique_ptr<Shape>(shape.clone()));
+void Window::addShape(DrawObject & shape) {
+	shape_vec_mutex.lock();
+	shape_vec.push_back(std::unique_ptr<DrawObject>(shape.clone()));
 	update_frame = true;
+	shape_vec_mutex.unlock();
 }
 
 void Window::addShape(wykobi::polygon<float, 2> poly) {
@@ -106,7 +122,6 @@ void PolygonShape::appendVertex(sf::VertexArray & vertex_arr) {
 }
 
 LineShape::LineShape(wykobi::segment<float, 2> seg) {
-	thickness = 10.f;
 	segment = seg;
 }
 

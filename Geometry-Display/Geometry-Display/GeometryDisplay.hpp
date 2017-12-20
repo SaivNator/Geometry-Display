@@ -22,32 +22,35 @@
 
 namespace GeometryDisplay {
 	
-	struct Shape {
+	class DrawObject {
+	public:
 		std::string name;
 		sf::Color color = sf::Color::White;
 		bool outer_line = false;
 		virtual void appendVertex(sf::VertexArray & vertex_arr) = 0;
-		virtual Shape* clone() = 0;
+		virtual DrawObject* clone() = 0;
 	};
-	struct TriangleShape : public Shape {
+	class TriangleShape : public DrawObject {
+	public:
 		wykobi::triangle<float, 2> triangle;
 		TriangleShape(float x0, float y0, float x1, float y1, float x2, float y2);
 		TriangleShape(std::vector<sf::Vector2f> & vec);
 	};
-	struct PolygonShape : public Shape {
+	class PolygonShape : public DrawObject {
+	public:
 		wykobi::polygon<float, 2> polygon;
 		PolygonShape(wykobi::polygon<float, 2> poly);
 		PolygonShape* clone() override;
 		void appendVertex(sf::VertexArray & vertex_arr) override;
 	};
-	struct LineShape : public Shape {
+	class LineShape : public DrawObject {
+	public:
 		wykobi::segment<float, 2> segment;
-		float thickness;
+		float thickness = 1.f;
 		LineShape(wykobi::segment<float, 2> seg);
 		LineShape* clone() override;
 		void appendVertex(sf::VertexArray & vertex_arr) override;
 	};
-
 
 	class Window {
 	private:
@@ -60,8 +63,12 @@ namespace GeometryDisplay {
 		std::atomic<bool> update_frame = false;
 		std::atomic<bool> running = true;
 
-		std::vector<std::unique_ptr<Shape>> shape_vec;
+		std::mutex shape_vec_mutex;
+		std::vector<std::unique_ptr<DrawObject>> shape_vec;
 		sf::VertexArray shape_vertex_array = sf::VertexArray(sf::Triangles);
+		
+		sf::VertexArray ui_vertex_array = sf::VertexArray(sf::Triangles);
+		std::vector<sf::Text> sf_text_vec;
 
 		std::thread window_thread;
 
@@ -69,6 +76,11 @@ namespace GeometryDisplay {
 		Window thread function
 		*/
 		void windowHandler();
+
+		/*
+		Render UI
+		*/
+		void renderUI();
 
 		/*
 		Renders and displays next frame
@@ -79,10 +91,9 @@ namespace GeometryDisplay {
 	public:
 		//Window();							//constructor
 
-		void addShape(Shape & shape);
+		void addShape(DrawObject & shape);
 		void addShape(wykobi::polygon<float, 2> poly);
 		void addShape(wykobi::segment<float, 2> seg);
-		//Shape* addShape(wykobi::polygon<float, 2> poly);
 		//std::vector<Shape*> addShape(std::vector<wykobi::polygon<float, 2>> & vec);
 		void clearShapeVec();
 
@@ -124,8 +135,6 @@ namespace GeometryDisplay {
 		*/
 		void close();						
 	};
-
-	
 
 }
 
