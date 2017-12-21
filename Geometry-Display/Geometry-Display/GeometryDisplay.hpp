@@ -57,8 +57,8 @@ namespace GeometryDisplay {
 		sf::RenderWindow window;
 
 		std::atomic<int> update_interval = 50;		//in ms
-		std::atomic<int> window_width = 500;		//in px
-		std::atomic<int> window_height = 500;		//in px
+		std::atomic<unsigned int> window_width = 500;		//in px
+		std::atomic<unsigned int> window_height = 500;		//in px
 		std::atomic<bool> update_settings = false;
 		std::atomic<bool> update_frame = false;
 		std::atomic<bool> running = true;
@@ -66,9 +66,14 @@ namespace GeometryDisplay {
 		std::mutex shape_vec_mutex;
 		std::vector<std::unique_ptr<DrawObject>> shape_vec;
 		sf::VertexArray shape_vertex_array = sf::VertexArray(sf::Triangles);
+		std::vector<sf::Text> shape_text_vec;
 		
 		sf::VertexArray ui_vertex_array = sf::VertexArray(sf::Triangles);
-		std::vector<sf::Text> sf_text_vec;
+		std::vector<sf::Text> ui_text_vector;
+		float ui_border_thickness = 50.f;
+		sf::Color ui_border_color = sf::Color(129, 129, 129);
+
+
 
 		std::thread window_thread;
 
@@ -89,7 +94,7 @@ namespace GeometryDisplay {
 		void renderFrame();
 		
 	public:
-		//Window();							//constructor
+		Window();							//constructor
 
 		void addShape(DrawObject & shape);
 		void addShape(wykobi::polygon<float, 2> poly);

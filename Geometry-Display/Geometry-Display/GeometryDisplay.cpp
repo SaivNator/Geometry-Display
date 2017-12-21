@@ -6,14 +6,19 @@
 
 using namespace GeometryDisplay;
 
+Window::Window() { 
+	
+}
+
 void Window::create() {
 	//std::cout << ">>>" << std::this_thread::get_id() << "<<<: " << "init()\n";
 	window_thread = std::thread(&Window::windowHandler, this);
+	update_frame = true;
 }
 
 void Window::windowHandler() {
 
-	window.create(sf::VideoMode(window_width, window_height), "Default title", sf::Style::Default);
+	window.create(sf::VideoMode(window_width, window_height), "Default title", sf::Style::Resize | sf::Style::Resize | sf::Style::Titlebar | sf::Style::Close);
 
 	while (running) {
 		//check input
@@ -23,6 +28,14 @@ void Window::windowHandler() {
 			case sf::Event::Closed:
 				running = false;
 				break;
+			case sf::Event::Resized:
+				window_width = e.size.width;//window.getSize().x;
+				window_height = e.size.height;//window.getSize().y;
+				//window.setSize(sf::Vector2u(window_width, window_height));
+				window.setView(sf::View(sf::FloatRect(0.f, 0.f, static_cast<float>(window_width), static_cast<float>(window_height))));
+
+				update_frame = true;
+				break;
 			default:
 				break;
 			}
@@ -30,7 +43,7 @@ void Window::windowHandler() {
 
 		//check settings
 		if (update_settings) {
-			window.setSize(sf::Vector2u(window_width, window_height));
+			//window.setSize(sf::Vector2u(window_width, window_height));
 			update_settings = false;
 		}
 
@@ -46,7 +59,35 @@ void Window::windowHandler() {
 }
 
 void Window::renderUI() {
-	
+	sf::View view = window.getDefaultView();
+
+	//make border rectangles
+	ui_vertex_array.clear();
+	std::vector<wykobi::rectangle<float>> rect_vec(4);
+	float win_width = static_cast<float>(window_width);
+	float win_height = static_cast<float>(window_height);
+	//top
+	rect_vec[0] = (wykobi::make_rectangle(0.f, 0.f, win_width, ui_border_thickness));
+	//bottom
+	rect_vec[1] = (wykobi::make_rectangle(0.f, window_height - ui_border_thickness, win_width, win_height));
+	//left
+	rect_vec[2] = (wykobi::make_rectangle(0.f, ui_border_thickness, ui_border_thickness, win_height - ui_border_thickness));
+	//right
+	rect_vec[3] = (wykobi::make_rectangle(win_width - ui_border_thickness, ui_border_thickness, win_width, win_height - ui_border_thickness));
+
+	for (wykobi::rectangle<float> & rect : rect_vec) {
+		wykobi::polygon<float, 2> poly = wykobi::make_polygon(rect);
+		std::vector<wykobi::triangle<float, 2>> tri_vec;
+		wykobi::algorithm::polygon_triangulate<wykobi::point2d<float>>(poly, std::back_inserter(tri_vec));
+		for (wykobi::triangle<float, 2> & tri : tri_vec) {
+			for (std::size_t i = 0; i < tri.size(); ++i) {
+				sf::Vertex v;
+				v.position = sf::Vector2f(tri[i].x, tri[i].y);
+				v.color = ui_border_color;
+				ui_vertex_array.append(v);
+			}
+		}
+	}
 }
 
 void Window::renderFrame() {
@@ -64,6 +105,11 @@ void Window::renderFrame() {
 
 
 	window.draw(shape_vertex_array);
+
+	renderUI();
+
+	window.draw(ui_vertex_array);
+
 	window.display();
 }
 
