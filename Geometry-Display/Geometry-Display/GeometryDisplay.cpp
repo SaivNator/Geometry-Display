@@ -31,37 +31,60 @@ void Window::windowHandler() {
 			case sf::Event::Resized:
 				window_width = e.size.width;//window.getSize().x;
 				window_height = e.size.height;//window.getSize().y;
-				//window.setSize(sf::Vector2u(window_width, window_height));
 				window.setView(sf::View(sf::FloatRect(0.f, 0.f, static_cast<float>(window_width), static_cast<float>(window_height))));
-
 				update_frame = true;
 				break;
 			default:
 				break;
 			}
 		}
-
 		//check settings
 		if (update_settings) {
-			//window.setSize(sf::Vector2u(window_width, window_height));
 			update_settings = false;
 		}
-
 		if (update_frame) {
-			renderFrame();
+			window.clear();
+
+			updateDiagram();
+			
+			renderDrawObject();
+
+			renderUI();
+			
+			window.display();
 			update_frame = false;
 		}
-
 		std::this_thread::sleep_for(std::chrono::milliseconds(update_interval));
 	}
 	//kill window
 	window.close();
 }
 
-void Window::renderUI() {
-	sf::View view = window.getDefaultView();
+void Window::updateDiagram() {
+	float win_width = static_cast<float>(window_width);
+	float win_height = static_cast<float>(window_height);
+	diagram_screen_area[0].x = ui_border_thickness;
+	diagram_screen_area[0].y = ui_border_thickness;
+	diagram_screen_area[1].x = win_width - ui_border_thickness;
+	diagram_screen_area[1].y = win_height - ui_border_thickness;
 
-	//make border rectangles
+
+	wykobi::rectangle<float> temp_rect;
+	float world_width = (diagram_screen_area[1].x - diagram_screen_area[0].x) * diagram_world_zoom.x;
+	float world_height = (diagram_screen_area[1].y - diagram_screen_area[0].y) * diagram_world_zoom.y;
+	temp_rect[0].x = diagram_position.x;
+	temp_rect[0].y = diagram_position.y;
+	temp_rect[1].x = diagram_position.x + world_width;
+	temp_rect[1].y = diagram_position.y + world_height;
+	diagram_world_area = wykobi::rotate(diagram_world_rotation, wykobi::make_polygon(temp_rect));
+
+
+	diagram_screen_rotation = 90.f * diagram_origin_corner;
+	
+}
+
+void Window::renderUI() {
+	//render border rectangles
 	ui_vertex_array.clear();
 	std::vector<wykobi::rectangle<float>> rect_vec(4);
 	float win_width = static_cast<float>(window_width);
@@ -74,7 +97,6 @@ void Window::renderUI() {
 	rect_vec[2] = (wykobi::make_rectangle(0.f, ui_border_thickness, ui_border_thickness, win_height - ui_border_thickness));
 	//right
 	rect_vec[3] = (wykobi::make_rectangle(win_width - ui_border_thickness, ui_border_thickness, win_width, win_height - ui_border_thickness));
-
 	for (wykobi::rectangle<float> & rect : rect_vec) {
 		wykobi::polygon<float, 2> poly = wykobi::make_polygon(rect);
 		std::vector<wykobi::triangle<float, 2>> tri_vec;
@@ -88,36 +110,63 @@ void Window::renderUI() {
 			}
 		}
 	}
+	window.draw(ui_vertex_array);
 }
 
-void Window::renderFrame() {
-	window.clear();
-
-	//render shapes
-	shape_vec_mutex.lock();
-	shape_vertex_array.clear();
-	for (auto it = shape_vec.begin(); it != shape_vec.end(); ++it) {
-		(*it)->appendVertex(shape_vertex_array);
-	}
-	shape_vec_mutex.unlock();
-
+void Window::renderDiagram() {
+	diagram_vertex_array.clear();
 	
+	//horizontal lines
 
 
-	window.draw(shape_vertex_array);
 
-	renderUI();
+	//vertical lines
 
-	window.draw(ui_vertex_array);
 
-	window.display();
+}
+
+void Window::renderDrawObject() {
+	//render shapes
+	draw_object_vec_mutex.lock();
+	draw_object_vertex_array.clear();
+	for (auto it = draw_object_vec.begin(); it != draw_object_vec.end(); ++it) {
+		(*it)->appendVertex(draw_object_vertex_array);
+	}
+	draw_object_vec_mutex.unlock();
+
+	sf::RenderStates states;
+
+	wykobi::point2d<float> corner = wykobi::rectangle_corner(diagram_screen_area, diagram_origin_corner);
+
+	states.transform.translate(corner.x, corner.y);
+	states.transform.translate(-diagram_position.x, -diagram_position.y);
+	states.transform.scale(diagram_world_zoom.x, diagram_world_zoom.y);
+	states.transform.rotate(diagram_world_rotation);
+	states.transform.rotate(diagram_screen_rotation);
+
+	window.draw(draw_object_vertex_array, states);
+}
+
+void Window::setDiagramOriginCorner(std::size_t i) {
+	diagram_origin_corner = i;
+	update_frame = true;
+}
+
+void Window::setDiagramRotaton(float r) {
+	diagram_world_rotation = r;
+	update_frame = true;
+}
+
+void Window::setDiagramLineResolution(float x, float y) {
+	diagram_line_resolution = wykobi::make_vector(x, y);
+	update_frame = true;
 }
 
 void Window::addShape(DrawObject & shape) {
-	shape_vec_mutex.lock();
-	shape_vec.push_back(std::unique_ptr<DrawObject>(shape.clone()));
+	draw_object_vec_mutex.lock();
+	draw_object_vec.push_back(std::unique_ptr<DrawObject>(shape.clone()));
 	update_frame = true;
-	shape_vec_mutex.unlock();
+	draw_object_vec_mutex.unlock();
 }
 
 void Window::addShape(wykobi::polygon<float, 2> poly) {
@@ -131,7 +180,7 @@ void Window::addShape(wykobi::segment<float, 2> seg) {
 }
 
 void Window::clearShapeVec() {
-	shape_vec.clear();
+	draw_object_vec.clear();
 	update_frame = true;
 }
 
@@ -176,19 +225,7 @@ LineShape* LineShape::clone() {
 }
 
 void LineShape::appendVertex(sf::VertexArray & vertex_arr) {
-	float length = wykobi::distance(segment);
-	float dx = segment[0].x - segment[1].x;
-	float dy = segment[0].y - segment[1].y;
-	dx /= length;
-	dy /= length;
-	wykobi::point2d<float> p1 = wykobi::make_point(segment[0].x + (thickness / 2)*dy, segment[0].y - (thickness / 2)*dx);
-	wykobi::point2d<float> p2 = wykobi::make_point(segment[0].x - (thickness / 2)*dy, segment[0].y + (thickness / 2)*dx);
-	wykobi::point2d<float> p3 = wykobi::make_point(segment[1].x - (thickness / 2)*dy, segment[1].y + (thickness / 2)*dx);
-	wykobi::point2d<float> p4 = wykobi::make_point(segment[1].x + (thickness / 2)*dy, segment[1].y - (thickness / 2)*dx);
-	wykobi::polygon<float, 2> poly = wykobi::make_polygon(std::vector<wykobi::point2d<float>>{p1, p2, p3, p4});
-	std::vector<wykobi::triangle<float, 2>> triangle_vec;
-	wykobi::algorithm::polygon_triangulate<wykobi::point2d<float>>(poly, std::back_inserter(triangle_vec));
-	for (wykobi::triangle<float, 2> & tri : triangle_vec) {
+	for (wykobi::triangle<float, 2> & tri : makeTriangleLine(segment, thickness)) {
 		for (std::size_t i = 0; i < tri.size(); ++i) {
 			sf::Vertex v;
 			v.position = sf::Vector2f(tri[i].x, tri[i].y);
@@ -196,6 +233,27 @@ void LineShape::appendVertex(sf::VertexArray & vertex_arr) {
 			vertex_arr.append(v);
 		}
 	}
+}
+
+std::vector<wykobi::triangle<float, 2>> GeometryDisplay::makeTriangleLine(float x0, float y0, float x1, float y1, float thickness) {
+	wykobi::segment<float, 2> segment = wykobi::make_segment(x0, y0, x1, y1);
+	float length = wykobi::distance(segment);
+	float dx = segment[0].x - segment[1].x;
+	float dy = segment[0].y - segment[1].y;
+	dx /= length;
+	dy /= length;
+	wykobi::point2d<float> p0 = wykobi::make_point(segment[0].x + (thickness / 2)*dy, segment[0].y - (thickness / 2)*dx);
+	wykobi::point2d<float> p1 = wykobi::make_point(segment[0].x - (thickness / 2)*dy, segment[0].y + (thickness / 2)*dx);
+	wykobi::point2d<float> p2 = wykobi::make_point(segment[1].x - (thickness / 2)*dy, segment[1].y + (thickness / 2)*dx);
+	wykobi::point2d<float> p3 = wykobi::make_point(segment[1].x + (thickness / 2)*dy, segment[1].y - (thickness / 2)*dx);
+	wykobi::polygon<float, 2> poly = wykobi::make_polygon(std::vector<wykobi::point2d<float>>{p0, p1, p2, p3});
+	std::vector<wykobi::triangle<float, 2>> triangle_vec;
+	wykobi::algorithm::polygon_triangulate<wykobi::point2d<float>>(poly, std::back_inserter(triangle_vec));
+	return triangle_vec;
+}
+
+std::vector<wykobi::triangle<float, 2>>GeometryDisplay::makeTriangleLine(wykobi::segment<float, 2> & seg, float thickness) {
+	return makeTriangleLine(seg[0].x, seg[0].y, seg[1].x, seg[1].y, thickness);
 }
 
 //end

@@ -63,24 +63,48 @@ namespace GeometryDisplay {
 		std::atomic<bool> update_frame = false;
 		std::atomic<bool> running = true;
 
-		std::mutex shape_vec_mutex;
-		std::vector<std::unique_ptr<DrawObject>> shape_vec;
-		sf::VertexArray shape_vertex_array = sf::VertexArray(sf::Triangles);
-		std::vector<sf::Text> shape_text_vec;
+		std::mutex draw_object_vec_mutex;
+		std::vector<std::unique_ptr<DrawObject>> draw_object_vec;
+		sf::VertexArray draw_object_vertex_array = sf::VertexArray(sf::Triangles);
+		//std::vector<sf::Text> shape_text_vec;
 		
 		sf::VertexArray ui_vertex_array = sf::VertexArray(sf::Triangles);
 		std::vector<sf::Text> ui_text_vector;
 		float ui_border_thickness = 50.f;
 		sf::Color ui_border_color = sf::Color(129, 129, 129);
 
-
-
 		std::thread window_thread;
+
+		sf::VertexArray diagram_vertex_array = sf::VertexArray(sf::Triangles);
+
+		//relation between screen space and object space
+		wykobi::point2d<float> diagram_position = wykobi::make_point<float>(0.f, 0.f);	//diagram world position, at origin
+		wykobi::polygon<float, 2> diagram_world_area;	//world area
+		wykobi::vector2d<float> diagram_world_zoom = wykobi::make_vector<float>(1.f, 1.f);		//world zoom
+		float diagram_world_rotation = 0.f;
+		wykobi::rectangle<float> diagram_screen_area;	//area on screen
+		float diagram_screen_rotation = 0.f;			
+		std::size_t diagram_origin_corner = 0;
+		
+		wykobi::vector2d<float> diagram_line_resolution = wykobi::make_vector<float>(10.f, 10.f);
+		float diagram_line_thickness = 1.f;
+
+		
 
 		/*
 		Window thread function
 		*/
 		void windowHandler();
+
+		/*
+		Update diagram
+		*/
+		void updateDiagram();
+
+		/*
+		Render diagram
+		*/
+		void renderDiagram();
 
 		/*
 		Render UI
@@ -91,7 +115,7 @@ namespace GeometryDisplay {
 		Renders and displays next frame
 		Must be called from window_thread
 		*/
-		void renderFrame();
+		void renderDrawObject();
 		
 	public:
 		Window();							//constructor
@@ -101,6 +125,26 @@ namespace GeometryDisplay {
 		void addShape(wykobi::segment<float, 2> seg);
 		//std::vector<Shape*> addShape(std::vector<wykobi::polygon<float, 2>> & vec);
 		void clearShapeVec();
+
+		/*
+		Set diagram render corner
+		*/
+		void setDiagramOriginCorner(std::size_t i);
+
+		/*
+		Set diagram rotation
+		*/
+		void setDiagramRotaton(float r);
+
+		/*
+		Set diagram resolution
+		*/
+		void setDiagramLineResolution(float x, float y);
+
+		/*
+		Set diagram position
+		*/
+		void setDiagramPosition(float x, float y);
 
 		/*
 		Set update interval
@@ -140,6 +184,13 @@ namespace GeometryDisplay {
 		*/
 		void close();						
 	};
+
+
+	/*
+	Make two triangles representing a line with thickness
+	*/
+	std::vector<wykobi::triangle<float, 2>> makeTriangleLine(float x0, float y0, float x1, float y1, float thickness);
+	std::vector<wykobi::triangle<float, 2>> makeTriangleLine(wykobi::segment<float, 2> & seg, float thickness);
 
 }
 
