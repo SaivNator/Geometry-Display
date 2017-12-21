@@ -56,12 +56,14 @@ namespace GeometryDisplay {
 	private:
 		sf::RenderWindow window;
 
-		std::atomic<int> update_interval = 50;		//in ms
-		std::atomic<unsigned int> window_width = 500;		//in px
-		std::atomic<unsigned int> window_height = 500;		//in px
-		std::atomic<bool> update_settings = false;
-		std::atomic<bool> update_frame = false;
-		std::atomic<bool> running = true;
+		int update_interval = 50;				//in ms
+		unsigned int window_width = 500;		//in px
+		unsigned int window_height = 500;		//in px
+		bool update_settings = false;
+		bool update_frame = false;
+		bool running = true;
+
+		std::mutex window_mutex;
 
 		std::mutex draw_object_vec_mutex;
 		std::vector<std::unique_ptr<DrawObject>> draw_object_vec;
@@ -156,6 +158,11 @@ namespace GeometryDisplay {
 		Set window size
 		*/
 		void setSize(int w, int h);
+
+		/*
+		Set title
+		*/
+		void setTitle(std::string & title);
 
 		/*
 		Get window width

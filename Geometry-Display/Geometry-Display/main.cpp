@@ -19,33 +19,24 @@ int main() {
 		return EXIT_FAILURE;
 	}
 
-	GeometryDisplay::Window display;
-
-	display.create();
-
 	GeometryDisplay::LineShape line(wykobi::make_segment<float>(10, 10, 300, 400));
-
-
 	line.thickness = 10.f;
+	std::vector<GeometryDisplay::Window> win_vec(4);
+	int i = 0;
+	for (auto & w : win_vec) {
+		w.create();
+		w.setDiagramPosition(-100, 100);
+		w.setDiagramOriginCorner(i++);
+		w.setDiagramRotaton(0.f);
+		w.addShape(line);
+	}
 
-	display.addShape(line);
-
-	display.setDiagramOriginCorner(1);
-	display.setDiagramRotaton(-30.f);
 
 
 
-
-
-	//display.addShape(wykobi::make_polygon<float>(wykobi::make_circle<float>(100, 100, 50), 10));
-	//
-	//wykobi::segment<float, 2> seg = wykobi::make_segment(10.f, 10.f, 321.f, 100.f);
-	//
-	//display.addShape(seg);
-	
-
-	display.join();
-	display.close();
+	for (auto & w : win_vec) {
+		w.join();
+	}
 
 	return EXIT_SUCCESS;
 }

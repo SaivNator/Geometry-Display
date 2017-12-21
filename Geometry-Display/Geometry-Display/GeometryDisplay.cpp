@@ -21,6 +21,7 @@ void Window::windowHandler() {
 	window.create(sf::VideoMode(window_width, window_height), "Default title", sf::Style::Resize | sf::Style::Resize | sf::Style::Titlebar | sf::Style::Close);
 
 	while (running) {
+		window_mutex.lock();
 		//check input
 		sf::Event e;
 		while (window.pollEvent(e)) {
@@ -54,6 +55,7 @@ void Window::windowHandler() {
 			window.display();
 			update_frame = false;
 		}
+		window_mutex.unlock();
 		std::this_thread::sleep_for(std::chrono::milliseconds(update_interval));
 	}
 	//kill window
@@ -118,7 +120,7 @@ void Window::renderDiagram() {
 	
 	//horizontal lines
 
-
+	
 
 	//vertical lines
 
@@ -147,19 +149,41 @@ void Window::renderDrawObject() {
 	window.draw(draw_object_vertex_array, states);
 }
 
+void Window::setTitle(std::string & title) {
+	window_mutex.lock();
+	window.setTitle(title);
+	update_frame = true;
+	window_mutex.unlock();
+}
+
+void Window::setDiagramPosition(float x, float y) {
+	window_mutex.lock();
+	diagram_position.x = x;
+	diagram_position.y = y;
+	update_frame = true;
+	window_mutex.unlock();
+}
+
 void Window::setDiagramOriginCorner(std::size_t i) {
+	window_mutex.lock();
 	diagram_origin_corner = i;
 	update_frame = true;
+	window_mutex.unlock();
 }
 
 void Window::setDiagramRotaton(float r) {
+	window_mutex.lock();
 	diagram_world_rotation = r;
 	update_frame = true;
+	window_mutex.unlock();
 }
 
 void Window::setDiagramLineResolution(float x, float y) {
-	diagram_line_resolution = wykobi::make_vector(x, y);
+	window_mutex.lock();
+	diagram_line_resolution.x = x;
+	diagram_line_resolution.y = y;
 	update_frame = true;
+	window_mutex.unlock();
 }
 
 void Window::addShape(DrawObject & shape) {
