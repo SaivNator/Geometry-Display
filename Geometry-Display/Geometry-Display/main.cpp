@@ -32,6 +32,8 @@ int main() {
 		w.setDiagramOriginCorner(i);
 		w.setDiagramRotaton(-30.f);
 
+		w.setMouseMove(true);
+
 		std::ostringstream title;
 		title << "Window ";
 		title << i;

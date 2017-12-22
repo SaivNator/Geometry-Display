@@ -40,6 +40,16 @@ void Window::windowHandler() {
 				window.setView(sf::View(sf::FloatRect(0.f, 0.f, static_cast<float>(window_width), static_cast<float>(window_height))));
 				update_frame = true;
 				break;
+			case sf::Event::MouseMoved:
+				mouse_current_pos.x = static_cast<float>(e.mouseMove.x);
+				mouse_current_pos.y = static_cast<float>(e.mouseMove.y);
+				break;
+			case sf::Event::MouseButtonPressed:
+				mouse_left_down = true;
+				break;
+			case sf::Event::MouseButtonReleased:
+				mouse_left_down = false;
+				break;
 			default:
 				break;
 			}
@@ -50,6 +60,12 @@ void Window::windowHandler() {
 			window.setSize(sf::Vector2u(window_width, window_height));
 			update_settings = false;
 		}
+
+		if (mouse_move) {
+			updateMouseMove();
+			update_frame = true;
+		}
+
 		if (update_frame) {
 			window.clear();
 
@@ -69,6 +85,28 @@ void Window::windowHandler() {
 	}
 	//kill window
 	window.close();
+}
+
+void Window::setMouseMove(bool v) {
+	mouse_move = v;
+}
+
+void Window::updateMouseMove() {
+	if (mouse_left_down && !mouse_left_bounce) {
+		mouse_start_pos = mouse_current_pos;
+		mouse_left_bounce = true;
+	}
+	else if (mouse_left_down && mouse_left_bounce) {
+
+		wykobi::point2d<float> diff = mouse_start_pos - mouse_current_pos;
+		diff = wykobi::rotate(-diagram_screen_rotation, diff);
+		diff = wykobi::rotate(-diagram_world_rotation, diff);
+
+		diagram_position = wykobi::translate(wykobi::make_vector(diff), diagram_position);
+	}
+	else if (!mouse_left_down && mouse_left_bounce) {
+		mouse_left_bounce = false;
+	}
 }
 
 void Window::updateDiagram() {

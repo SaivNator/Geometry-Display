@@ -101,10 +101,22 @@ namespace GeometryDisplay {
 		float diagram_line_thickness = 1.f;
 		sf::Color diagram_line_color = sf::Color::Blue;
 
+		//mouse move
+		bool mouse_move = false;
+		bool mouse_left_down = false;
+		bool mouse_left_bounce = false;
+		wykobi::point2d<float> mouse_current_pos;
+		wykobi::point2d<float> mouse_start_pos;
+
 		/*
 		Window thread function
 		*/
 		void windowHandler();
+
+		/*
+		Update mouse move
+		*/
+		void updateMouseMove();
 
 		/*
 		Update diagram
@@ -136,6 +148,11 @@ namespace GeometryDisplay {
 		void addShape(wykobi::segment<float, 2> seg);
 		//std::vector<Shape*> addShape(std::vector<wykobi::polygon<float, 2>> & vec);
 		void clearShapeVec();
+
+		/*
+		Set mouse move
+		*/
+		void setMouseMove(bool v);
 
 		/*
 		Set diagram render corner
