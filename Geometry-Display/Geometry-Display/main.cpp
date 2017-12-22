@@ -7,6 +7,7 @@
 #include <thread>
 #include <mutex>
 #include <chrono>
+#include <memory>
 
 #include <SFML\Graphics.hpp>
 #include <wykobi.hpp>
@@ -15,8 +16,8 @@
 #include "TextShape.hpp"
 
 int main() {
-	sf::Font arial;
-	if (!arial.loadFromFile("fonts/arial.ttf")) {
+	std::shared_ptr<sf::Font> arial(new sf::Font());
+	if (!arial->loadFromFile("fonts/arial.ttf")) {
 		std::cout << "Font load failed\n";
 		return EXIT_FAILURE;
 	}
@@ -27,7 +28,7 @@ int main() {
 	std::size_t i = 0;
 	for (auto & w : win_vec) {
 		w.create();
-		w.setDiagramPosition(100, 100);
+		w.setDiagramPosition(0, 100);
 		w.setDiagramOriginCorner(i);
 		w.setDiagramRotaton(-30.f);
 

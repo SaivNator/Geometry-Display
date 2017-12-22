@@ -5,7 +5,14 @@
 using namespace GeometryDisplay;
 
 Window::Window() { 
-	
+	text_font = std::shared_ptr<sf::Font>(new sf::Font());
+	if (!text_font->loadFromFile("fonts/arial.ttf")) {
+		std::cout << "Font load failed\n";
+	}
+}
+
+Window::Window(std::shared_ptr<sf::Font> font_ptr) {
+	text_font = font_ptr;
 }
 
 void Window::create() {
@@ -50,9 +57,9 @@ void Window::windowHandler() {
 			
 			renderDrawObject();
 
-			renderDiagram();
-
 			renderUI();
+
+			renderDiagram();
 			
 			window.display();
 			update_frame = false;
@@ -74,8 +81,27 @@ void Window::updateDiagram() {
 
 
 	wykobi::rectangle<float> temp_rect;
-	diagram_world_size.x = (diagram_screen_area[1].x - diagram_screen_area[0].x) * diagram_world_zoom.x;
-	diagram_world_size.y = (diagram_screen_area[1].y - diagram_screen_area[0].y) * diagram_world_zoom.y;
+	switch (diagram_screen_origin_corner)
+	{
+	case 0:
+		diagram_world_size.x = (diagram_screen_area[1].x - diagram_screen_area[0].x) * diagram_world_zoom.x;
+		diagram_world_size.y = (diagram_screen_area[1].y - diagram_screen_area[0].y) * diagram_world_zoom.y;
+		break;
+	case 1:
+		diagram_world_size.x = (diagram_screen_area[1].y - diagram_screen_area[0].y) * diagram_world_zoom.y;
+		diagram_world_size.y = (diagram_screen_area[1].x - diagram_screen_area[0].x) * diagram_world_zoom.x;
+		break;
+	case 2:
+		diagram_world_size.x = (diagram_screen_area[1].x - diagram_screen_area[0].x) * diagram_world_zoom.x;
+		diagram_world_size.y = (diagram_screen_area[1].y - diagram_screen_area[0].y) * diagram_world_zoom.y;
+		break;
+	case 3:
+		diagram_world_size.x = (diagram_screen_area[1].y - diagram_screen_area[0].y) * diagram_world_zoom.y;
+		diagram_world_size.y = (diagram_screen_area[1].x - diagram_screen_area[0].x) * diagram_world_zoom.x;
+		break;
+	default:
+		break;
+	}
 	temp_rect[0].x = diagram_position.x;
 	temp_rect[0].y = diagram_position.y;
 	temp_rect[1].x = diagram_position.x + diagram_world_size.x;
@@ -117,25 +143,26 @@ void Window::renderUI() {
 	window.draw(ui_vertex_array);
 }
 
-float getClosestPointInRes(float v, float res) {
+float GeometryDisplay::getClosestPointInRes(float v, float res) {
 	return v - std::fmod(v, res);
 }
 
 void Window::renderDiagram() {
 	diagram_vertex_array.clear();
+	diagram_text_vector.clear();
 	
-	sf::RenderStates states;
+	sf::RenderStates line_states;
 	
 	wykobi::point2d<float> corner = wykobi::rectangle_corner(diagram_screen_area, diagram_screen_origin_corner);
-	states.transform.translate(corner.x, corner.y);
-	states.transform.rotate(diagram_screen_rotation);
-	states.transform.translate(-diagram_position.x, -diagram_position.y);
+	line_states.transform.translate(corner.x, corner.y);
+	line_states.transform.rotate(diagram_screen_rotation);
+	line_states.transform.translate(-diagram_position.x, -diagram_position.y);
 
 	float x, y;
 	float max_x, max_y;
 	max_x = diagram_position.x + diagram_world_size.x;
 	max_y = diagram_position.y + diagram_world_size.y;
-	//horizontal lines
+	//vertical lines
 	x = getClosestPointInRes(diagram_position.x, diagram_line_resolution.x);
 	y = diagram_position.y;
 	while (x < max_x) {
@@ -148,10 +175,20 @@ void Window::renderDiagram() {
 				diagram_vertex_array.append(v);
 			}
 		}
+
+		sf::Text line_pos_text;
+		line_pos_text.setFont(*text_font);
+		line_pos_text.setPosition(x, y - 20);
+		line_pos_text.setCharacterSize(diagram_text_char_size);
+		std::ostringstream t;
+		t << x;
+		line_pos_text.setString(t.str());
+		diagram_text_vector.push_back(line_pos_text);
+
 		x += diagram_line_resolution.x;
 	}
-	//vertical lines
-	x = diagram_position.y;
+	//horizontal lines
+	x = diagram_position.x;
 	y = getClosestPointInRes(diagram_position.y, diagram_line_resolution.y);
 	while (y < max_y) {
 		for (auto tri : makeTriangleLine(x, y, max_x, y, diagram_line_thickness)) {
@@ -163,11 +200,26 @@ void Window::renderDiagram() {
 				diagram_vertex_array.append(v);
 			}
 		}
+
+		sf::Text line_pos_text;
+		line_pos_text.setFont(*text_font);
+		line_pos_text.setPosition(x - 20, y);
+		line_pos_text.setCharacterSize(diagram_text_char_size);
+		std::ostringstream t;
+		t << y;
+		line_pos_text.setString(t.str());
+		diagram_text_vector.push_back(line_pos_text);
+
 		y += diagram_line_resolution.y;
 	}
 
-	window.draw(diagram_vertex_array, states);
+	//text
 
+	window.draw(diagram_vertex_array, line_states);
+	for (auto & t : diagram_text_vector) {
+		t.setRotation(-diagram_screen_rotation);
+		window.draw(t, line_states);
+	}
 }
 
 void Window::renderDrawObject() {

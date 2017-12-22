@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <ostream>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <thread>
@@ -59,6 +60,8 @@ namespace GeometryDisplay {
 
 		std::string window_title = "Geometry Display FeelsGoodMan Clap";
 
+		std::shared_ptr<sf::Font> text_font;
+
 		int update_interval = 50;				//in ms
 		unsigned int window_width = 500;		//in px
 		unsigned int window_height = 500;		//in px
@@ -81,6 +84,8 @@ namespace GeometryDisplay {
 		std::thread window_thread;
 
 		sf::VertexArray diagram_vertex_array = sf::VertexArray(sf::Triangles);
+		std::vector<sf::Text> diagram_text_vector;
+		unsigned int diagram_text_char_size = 10;
 
 		//relation between screen space and object space
 		wykobi::point2d<float> diagram_position = wykobi::make_point<float>(0.f, 0.f);	//diagram world position, at origin
@@ -92,11 +97,9 @@ namespace GeometryDisplay {
 		float diagram_screen_rotation = 0.f;			
 		std::size_t diagram_screen_origin_corner = 0;
 		
-		wykobi::vector2d<float> diagram_line_resolution = wykobi::make_vector<float>(10.f, 10.f);
+		wykobi::vector2d<float> diagram_line_resolution = wykobi::make_vector<float>(50.f, 50.f);
 		float diagram_line_thickness = 1.f;
 		sf::Color diagram_line_color = sf::Color::Blue;
-
-		
 
 		/*
 		Window thread function
@@ -125,7 +128,8 @@ namespace GeometryDisplay {
 		void renderDrawObject();
 		
 	public:
-		Window();							//constructor
+		Window();
+		Window(std::shared_ptr<sf::Font> font_ptr);							//constructor
 
 		void addShape(DrawObject & shape);
 		void addShape(wykobi::polygon<float, 2> poly);
@@ -204,6 +208,10 @@ namespace GeometryDisplay {
 	std::vector<wykobi::triangle<float, 2>> makeTriangleLine(float x0, float y0, float x1, float y1, float thickness);
 	std::vector<wykobi::triangle<float, 2>> makeTriangleLine(wykobi::segment<float, 2> & seg, float thickness);
 
+	/*
+	Floor point to closest resolution
+	*/
+	float getClosestPointInRes(float v, float res);
 }
 
 #endif // !GeometryDisplay_HEADER
