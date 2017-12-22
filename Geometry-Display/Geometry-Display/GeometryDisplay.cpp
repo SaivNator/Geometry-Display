@@ -2,8 +2,6 @@
 
 #include "GeometryDisplay.hpp"
 
-#include <cmath>
-
 using namespace GeometryDisplay;
 
 Window::Window() { 
@@ -17,9 +15,9 @@ void Window::create() {
 }
 
 void Window::windowHandler() {
-
-	window.create(sf::VideoMode(window_width, window_height), "Default title", sf::Style::Resize | sf::Style::Resize | sf::Style::Titlebar | sf::Style::Close);
-
+	window_mutex.lock();
+	window.create(sf::VideoMode(window_width, window_height), window_title, sf::Style::Resize | sf::Style::Resize | sf::Style::Titlebar | sf::Style::Close);
+	window_mutex.unlock();
 	while (running) {
 		window_mutex.lock();
 		//check input
@@ -41,6 +39,8 @@ void Window::windowHandler() {
 		}
 		//check settings
 		if (update_settings) {
+			window.setTitle(window_title);
+			window.setSize(sf::Vector2u(window_width, window_height));
 			update_settings = false;
 		}
 		if (update_frame) {
@@ -49,6 +49,8 @@ void Window::windowHandler() {
 			updateDiagram();
 			
 			renderDrawObject();
+
+			renderDiagram();
 
 			renderUI();
 			
@@ -72,16 +74,16 @@ void Window::updateDiagram() {
 
 
 	wykobi::rectangle<float> temp_rect;
-	float world_width = (diagram_screen_area[1].x - diagram_screen_area[0].x) * diagram_world_zoom.x;
-	float world_height = (diagram_screen_area[1].y - diagram_screen_area[0].y) * diagram_world_zoom.y;
+	diagram_world_size.x = (diagram_screen_area[1].x - diagram_screen_area[0].x) * diagram_world_zoom.x;
+	diagram_world_size.y = (diagram_screen_area[1].y - diagram_screen_area[0].y) * diagram_world_zoom.y;
 	temp_rect[0].x = diagram_position.x;
 	temp_rect[0].y = diagram_position.y;
-	temp_rect[1].x = diagram_position.x + world_width;
-	temp_rect[1].y = diagram_position.y + world_height;
+	temp_rect[1].x = diagram_position.x + diagram_world_size.x;
+	temp_rect[1].y = diagram_position.y + diagram_world_size.y;
 	diagram_world_area = wykobi::rotate(diagram_world_rotation, wykobi::make_polygon(temp_rect));
 
 
-	diagram_screen_rotation = 90.f * diagram_origin_corner;
+	diagram_screen_rotation = 90.f * diagram_screen_origin_corner;
 	
 }
 
@@ -115,15 +117,56 @@ void Window::renderUI() {
 	window.draw(ui_vertex_array);
 }
 
+float getClosestPointInRes(float v, float res) {
+	return v - std::fmod(v, res);
+}
+
 void Window::renderDiagram() {
 	diagram_vertex_array.clear();
 	
-	//horizontal lines
-
+	sf::RenderStates states;
 	
+	wykobi::point2d<float> corner = wykobi::rectangle_corner(diagram_screen_area, diagram_screen_origin_corner);
+	states.transform.translate(corner.x, corner.y);
+	states.transform.rotate(diagram_screen_rotation);
+	states.transform.translate(-diagram_position.x, -diagram_position.y);
 
+	float x, y;
+	float max_x, max_y;
+	max_x = diagram_position.x + diagram_world_size.x;
+	max_y = diagram_position.y + diagram_world_size.y;
+	//horizontal lines
+	x = getClosestPointInRes(diagram_position.x, diagram_line_resolution.x);
+	y = diagram_position.y;
+	while (x < max_x) {
+		for (auto tri : makeTriangleLine(x, y, x, max_y, diagram_line_thickness)) {
+			for (std::size_t i = 0; i < tri.size(); ++i) {
+				sf::Vertex v;
+				v.position.x = tri[i].x;
+				v.position.y = tri[i].y;
+				v.color = diagram_line_color;
+				diagram_vertex_array.append(v);
+			}
+		}
+		x += diagram_line_resolution.x;
+	}
 	//vertical lines
+	x = diagram_position.y;
+	y = getClosestPointInRes(diagram_position.y, diagram_line_resolution.y);
+	while (y < max_y) {
+		for (auto tri : makeTriangleLine(x, y, max_x, y, diagram_line_thickness)) {
+			for (std::size_t i = 0; i < tri.size(); ++i) {
+				sf::Vertex v;
+				v.position.x = tri[i].x;
+				v.position.y = tri[i].y;
+				v.color = diagram_line_color;
+				diagram_vertex_array.append(v);
+			}
+		}
+		y += diagram_line_resolution.y;
+	}
 
+	window.draw(diagram_vertex_array, states);
 
 }
 
@@ -138,20 +181,34 @@ void Window::renderDrawObject() {
 
 	sf::RenderStates states;
 
-	wykobi::point2d<float> corner = wykobi::rectangle_corner(diagram_screen_area, diagram_origin_corner);
-
+	wykobi::point2d<float> corner = wykobi::rectangle_corner(diagram_screen_area, diagram_screen_origin_corner);
 	states.transform.translate(corner.x, corner.y);
+	states.transform.rotate(diagram_screen_rotation);
 	states.transform.translate(-diagram_position.x, -diagram_position.y);
 	states.transform.scale(diagram_world_zoom.x, diagram_world_zoom.y);
 	states.transform.rotate(diagram_world_rotation);
-	states.transform.rotate(diagram_screen_rotation);
 
 	window.draw(draw_object_vertex_array, states);
 }
 
-void Window::setTitle(std::string & title) {
+void Window::setTitle(std::string title) {
 	window_mutex.lock();
-	window.setTitle(title);
+	window_title = title;
+	update_settings = true;
+	window_mutex.unlock();
+}
+
+void Window::setUpdateInterval(int t) {
+	window_mutex.lock();
+	update_interval = t;
+	window_mutex.unlock();
+}
+
+void Window::setSize(int w, int h) {
+	window_mutex.lock();
+	window_width = w;
+	window_height = h;
+	update_settings = true;
 	update_frame = true;
 	window_mutex.unlock();
 }
@@ -166,7 +223,7 @@ void Window::setDiagramPosition(float x, float y) {
 
 void Window::setDiagramOriginCorner(std::size_t i) {
 	window_mutex.lock();
-	diagram_origin_corner = i;
+	diagram_screen_origin_corner = i;
 	update_frame = true;
 	window_mutex.unlock();
 }

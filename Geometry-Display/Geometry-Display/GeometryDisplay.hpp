@@ -14,6 +14,7 @@
 #include <atomic>
 #include <functional>
 #include <memory>
+#include <cmath>
 
 #include <SFML\Graphics.hpp>
 
@@ -56,6 +57,8 @@ namespace GeometryDisplay {
 	private:
 		sf::RenderWindow window;
 
+		std::string window_title = "Geometry Display FeelsGoodMan Clap";
+
 		int update_interval = 50;				//in ms
 		unsigned int window_width = 500;		//in px
 		unsigned int window_height = 500;		//in px
@@ -83,13 +86,15 @@ namespace GeometryDisplay {
 		wykobi::point2d<float> diagram_position = wykobi::make_point<float>(0.f, 0.f);	//diagram world position, at origin
 		wykobi::polygon<float, 2> diagram_world_area;	//world area
 		wykobi::vector2d<float> diagram_world_zoom = wykobi::make_vector<float>(1.f, 1.f);		//world zoom
+		wykobi::vector2d<float> diagram_world_size;
 		float diagram_world_rotation = 0.f;
 		wykobi::rectangle<float> diagram_screen_area;	//area on screen
 		float diagram_screen_rotation = 0.f;			
-		std::size_t diagram_origin_corner = 0;
+		std::size_t diagram_screen_origin_corner = 0;
 		
 		wykobi::vector2d<float> diagram_line_resolution = wykobi::make_vector<float>(10.f, 10.f);
 		float diagram_line_thickness = 1.f;
+		sf::Color diagram_line_color = sf::Color::Blue;
 
 		
 
@@ -162,7 +167,7 @@ namespace GeometryDisplay {
 		/*
 		Set title
 		*/
-		void setTitle(std::string & title);
+		void setTitle(std::string title);
 
 		/*
 		Get window width

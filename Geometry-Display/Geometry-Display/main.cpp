@@ -1,6 +1,8 @@
 //Author: Sivert Andresen Cubedo
 
 #include <iostream>
+#include <ostream>
+#include <sstream>
 #include <string>
 #include <thread>
 #include <mutex>
@@ -22,13 +24,19 @@ int main() {
 	GeometryDisplay::LineShape line(wykobi::make_segment<float>(10, 10, 300, 400));
 	line.thickness = 10.f;
 	std::vector<GeometryDisplay::Window> win_vec(4);
-	int i = 0;
+	std::size_t i = 0;
 	for (auto & w : win_vec) {
 		w.create();
-		w.setDiagramPosition(-100, 100);
-		w.setDiagramOriginCorner(i++);
-		w.setDiagramRotaton(0.f);
+		w.setDiagramPosition(100, 100);
+		w.setDiagramOriginCorner(i);
+		w.setDiagramRotaton(-30.f);
+
+		std::ostringstream title;
+		title << "Window ";
+		title << i;
+		w.setTitle(title.str());
 		w.addShape(line);
+		++i;
 	}
 
 
