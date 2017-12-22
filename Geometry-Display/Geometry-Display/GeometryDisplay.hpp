@@ -94,6 +94,7 @@ namespace GeometryDisplay {
 		wykobi::vector2d<float> diagram_world_size;
 		float diagram_world_rotation = 0.f;
 		wykobi::rectangle<float> diagram_screen_area;	//area on screen
+		wykobi::vector2d<float> diagram_screen_size;
 		float diagram_screen_rotation = 0.f;			
 		std::size_t diagram_screen_origin_corner = 0;
 		

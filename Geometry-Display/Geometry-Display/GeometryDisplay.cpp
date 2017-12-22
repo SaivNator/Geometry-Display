@@ -91,16 +91,67 @@ void Window::setMouseMove(bool v) {
 	mouse_move = v;
 }
 
+float normalizeFloat(float value, float min, float max) {
+	return (value - min) / (max - min);
+}
+float deNormalizeFloat(float value, float min, float max) {
+	return (value * (max - min) + min);
+}
+
 void Window::updateMouseMove() {
 	if (mouse_left_down && !mouse_left_bounce) {
-		mouse_start_pos = mouse_current_pos;
+		//start.x = normalizeFloat(start.x, 0.f, diagram_screen_size.x);
+		//start.y = normalizeFloat(start.y, 0.f, diagram_screen_size.y);
+		//start.x = deNormalizeFloat(start.x, 0.f, diagram_world_size.x);
+		//start.y = deNormalizeFloat(start.y, 0.f, diagram_world_size.y);
+		//start = wykobi::rotate(-diagram_screen_rotation, start);
+		//start = wykobi::rotate(-diagram_world_rotation, start);
+		//start = start + diagram_position;
+
+		//states.transform.translate(corner.x, corner.y);
+		//states.transform.rotate(diagram_screen_rotation);
+		//states.transform.translate(-diagram_position.x, -diagram_position.y);
+		//states.transform.scale(diagram_world_zoom.x, diagram_world_zoom.y);
+		//states.transform.rotate(diagram_world_rotation);
+		
+		sf::Transform trans;
+		trans.rotate(-diagram_world_rotation);
+		//trans.scale(-diagram_world_zoom.x, -diagram_world_size.y);
+		trans.translate(diagram_position.x, diagram_position.y);
+		trans.rotate(-diagram_screen_rotation);
+
+		auto start = trans.transformPoint(mouse_current_pos.x, mouse_current_pos.y);
+
+		mouse_start_pos.x = start.x;
+		mouse_start_pos.y = start.y;
 		mouse_left_bounce = true;
 	}
 	else if (mouse_left_down && mouse_left_bounce) {
 
-		wykobi::point2d<float> diff = mouse_start_pos - mouse_current_pos;
-		diff = wykobi::rotate(-diagram_screen_rotation, diff);
-		diff = wykobi::rotate(-diagram_world_rotation, diff);
+		//x = Math::normalizeFloat(x, 0.f, (float)window.getSize().x);
+		//y = Math::normalizeFloat(y, 0.f, (float)window.getSize().y);
+		//x = Math::deNormalizeFloat(x, 0, view.getSize().x);
+		//y = Math::deNormalizeFloat(y, 0, view.getSize().y);		
+
+		//current.x = normalizeFloat(current.x, 0.f, diagram_screen_size.x);
+		//current.y = normalizeFloat(current.y, 0.f, diagram_screen_size.y);
+		//current.x = deNormalizeFloat(current.x, 0.f, diagram_world_size.x);
+		//current.y = deNormalizeFloat(current.y, 0.f, diagram_world_size.y);
+		//current = wykobi::rotate(-diagram_screen_rotation, current);
+		//current = wykobi::rotate(-diagram_world_rotation, current);
+		//current = current + diagram_position;
+
+		sf::Transform trans;
+		trans.rotate(-diagram_world_rotation);
+		//trans.scale(-diagram_world_zoom.x, -diagram_world_size.y);
+		trans.translate(diagram_position.x, diagram_position.y);
+		trans.rotate(-diagram_screen_rotation);
+
+		auto current = trans.transformPoint(mouse_current_pos.x, mouse_current_pos.y);
+
+		wykobi::vector2d<float> current_vector(current.x, current.y);
+
+		wykobi::point2d<float> diff = mouse_start_pos - current_vector;
 
 		diagram_position = wykobi::translate(wykobi::make_vector(diff), diagram_position);
 	}
@@ -116,7 +167,9 @@ void Window::updateDiagram() {
 	diagram_screen_area[0].y = ui_border_thickness;
 	diagram_screen_area[1].x = win_width - ui_border_thickness;
 	diagram_screen_area[1].y = win_height - ui_border_thickness;
-
+	
+	diagram_screen_size.x = diagram_screen_area[1].x - diagram_screen_area[0].x;
+	diagram_screen_size.y = diagram_screen_area[1].y - diagram_screen_area[0].y;
 
 	wykobi::rectangle<float> temp_rect;
 	switch (diagram_screen_origin_corner)
