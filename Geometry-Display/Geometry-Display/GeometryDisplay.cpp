@@ -39,9 +39,13 @@ void Window::windowHandler() {
 				window_width = e.size.width;//window.getSize().x;
 				window_height = e.size.height;//window.getSize().y;
 				screen_view = sf::View(sf::FloatRect(0.f, 0.f, static_cast<float>(window_width), static_cast<float>(window_height)));
+				
 				update_frame = true;
 				break;
 			case sf::Event::MouseMoved:
+
+				mouse_pos = sf::Vector2i(e.mouseMove.x, e.mouseMove.y);
+				update_frame = true;
 				break;
 			case sf::Event::MouseButtonPressed:
 				mouse_left_down = true;
@@ -53,22 +57,18 @@ void Window::windowHandler() {
 				break;
 			}
 		}
-		//check settings
-		if (update_settings) {
-			window.setTitle(window_title);
-			window.setSize(sf::Vector2u(window_width, window_height));
-			update_settings = false;
-		}
-
-		if (mouse_move) {
-			updateMouseMove();
-			update_frame = true;
-		}
 
 		if (update_frame) {
 			window.clear();
 
+			window.setTitle(window_title);
+			window.setSize(sf::Vector2u(window_width, window_height));
+
 			updateView();
+			
+			if (mouse_move) {
+				updateMouseMove();
+			}
 			
 			renderDrawObject();
 
@@ -90,38 +90,40 @@ void Window::setMouseMove(bool v) {
 	mouse_move = v;
 }
 
-float normalizeFloat(float value, float min, float max) {
-	return (value - min) / (max - min);
-}
-float deNormalizeFloat(float value, float min, float max) {
-	return (value * (max - min) + min);
-}
+//float normalizeFloat(float value, float min, float max) {
+//	return (value - min) / (max - min);
+//}
+//float deNormalizeFloat(float value, float min, float max) {
+//	return (value * (max - min) + min);
+//}
 
 void Window::updateMouseMove() {
-	
-	if (mouse_left_down && !mouse_left_bounce) {
-		mouse_start_pos = window.mapPixelToCoords(sf::Mouse::getPosition(), world_view);
-		mouse_left_bounce = true;
-	}
-	else if (mouse_left_down && mouse_left_bounce) {
-		mouse_current_pos = window.mapPixelToCoords(sf::Mouse::getPosition(), world_view);
 
-		sf::Vector2f m = mouse_start_pos - mouse_current_pos;
-
-		world_view.move(m);
-
-
-
-	}
-	else if (!mouse_left_down && mouse_left_bounce) {
-		mouse_left_bounce = false;
+	if (diagram_area.contains(static_cast<float>(mouse_pos.x), static_cast<float>(mouse_pos.y))) {
+		if (mouse_left_down && !mouse_left_bounce) {
+			mouse_start_pos = window.mapPixelToCoords(mouse_pos, world_view);
+			mouse_left_bounce = true;
+		}
+		else if (mouse_left_down && mouse_left_bounce) {
+			mouse_current_pos = window.mapPixelToCoords(mouse_pos, world_view);
+			sf::Vector2f m = mouse_start_pos - mouse_current_pos;
+			world_view.move(m);
+		}
+		else if (!mouse_left_down && mouse_left_bounce) {
+			mouse_left_bounce = false;
+		}
 	}
 	
 }
 
 void Window::updateView() {
 
-	
+	//diagram_area = sf::FloatRect(ui_border_thickness, ui_border_thickness, screen_view.getSize().x - ui_border_thickness, screen_view.getSize().y - ui_border_thickness);
+
+	diagram_area.left = ui_border_thickness;
+	diagram_area.top = ui_border_thickness;
+	diagram_area.width = screen_view.getSize().x - ui_border_thickness * 2;
+	diagram_area.height = screen_view.getSize().y - ui_border_thickness * 2;
 
 }
 
@@ -168,12 +170,7 @@ void Window::renderLines() {
 	
 	sf::RenderStates line_states;
 	
-	/*
-	wykobi::point2d<float> corner = wykobi::rectangle_corner(diagram_screen_area, diagram_screen_origin_corner);
-	line_states.transform.translate(corner.x, corner.y);
-	line_states.transform.rotate(diagram_screen_rotation);
-	line_states.transform.translate(-diagram_position.x, -diagram_position.y);
-	*/
+	
 
 	/*
 	float x, y;
@@ -249,7 +246,6 @@ void Window::renderDrawObject() {
 		(*it)->appendVertex(draw_object_vertex_array);
 	}
 	draw_object_vec_mutex.unlock();
-
 	window.setView(world_view);
 	window.draw(draw_object_vertex_array);
 }
@@ -257,7 +253,7 @@ void Window::renderDrawObject() {
 void Window::setTitle(std::string title) {
 	window_mutex.lock();
 	window_title = title;
-	update_settings = true;
+	update_frame = true;
 	window_mutex.unlock();
 }
 
@@ -271,7 +267,6 @@ void Window::setSize(int w, int h) {
 	window_mutex.lock();
 	window_width = w;
 	window_height = h;
-	update_settings = true;
 	update_frame = true;
 	window_mutex.unlock();
 }

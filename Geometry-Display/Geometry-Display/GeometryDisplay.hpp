@@ -65,7 +65,6 @@ namespace GeometryDisplay {
 		int update_interval = 50;				//in ms
 		unsigned int window_width = 500;		//in px
 		unsigned int window_height = 500;		//in px
-		bool update_settings = false;
 		bool update_frame = false;
 		bool running = true;
 
@@ -90,7 +89,7 @@ namespace GeometryDisplay {
 		sf::View screen_view;
 		sf::View world_view;	
 		int origin_corner = 0;	//0 == top left, clockwise motion
-		
+		sf::FloatRect diagram_area;
 		wykobi::vector2d<float> diagram_line_resolution = wykobi::make_vector<float>(50.f, 50.f);
 		float diagram_line_thickness = 1.f;
 		sf::Color diagram_line_color = sf::Color::Blue;
@@ -99,6 +98,7 @@ namespace GeometryDisplay {
 		bool mouse_move = false;
 		bool mouse_left_down = false;
 		bool mouse_left_bounce = false;
+		sf::Vector2i mouse_pos;
 		sf::Vector2f mouse_current_pos;
 		sf::Vector2f mouse_start_pos;
 
