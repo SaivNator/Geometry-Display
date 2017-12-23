@@ -87,16 +87,9 @@ namespace GeometryDisplay {
 		std::vector<sf::Text> diagram_text_vector;
 		unsigned int diagram_text_char_size = 10;
 
-		//relation between screen space and object space
-		wykobi::point2d<float> diagram_position = wykobi::make_point<float>(0.f, 0.f);	//diagram world position, at origin
-		wykobi::polygon<float, 2> diagram_world_area;	//world area
-		wykobi::vector2d<float> diagram_world_zoom = wykobi::make_vector<float>(1.f, 1.f);		//world zoom
-		wykobi::vector2d<float> diagram_world_size;
-		float diagram_world_rotation = 0.f;
-		wykobi::rectangle<float> diagram_screen_area;	//area on screen
-		wykobi::vector2d<float> diagram_screen_size;
-		float diagram_screen_rotation = 0.f;			
-		std::size_t diagram_screen_origin_corner = 0;
+		sf::View screen_view;
+		sf::View world_view;	
+		int origin_corner = 0;	//0 == top left, clockwise motion
 		
 		wykobi::vector2d<float> diagram_line_resolution = wykobi::make_vector<float>(50.f, 50.f);
 		float diagram_line_thickness = 1.f;
@@ -106,8 +99,8 @@ namespace GeometryDisplay {
 		bool mouse_move = false;
 		bool mouse_left_down = false;
 		bool mouse_left_bounce = false;
-		wykobi::point2d<float> mouse_current_pos;
-		wykobi::point2d<float> mouse_start_pos;
+		sf::Vector2f mouse_current_pos;
+		sf::Vector2f mouse_start_pos;
 
 		/*
 		Window thread function
@@ -120,14 +113,14 @@ namespace GeometryDisplay {
 		void updateMouseMove();
 
 		/*
-		Update diagram
+		Update view
 		*/
-		void updateDiagram();
+		void updateView();
 
 		/*
 		Render diagram
 		*/
-		void renderDiagram();
+		void renderLines();
 
 		/*
 		Render UI
@@ -158,12 +151,12 @@ namespace GeometryDisplay {
 		/*
 		Set diagram render corner
 		*/
-		void setDiagramOriginCorner(std::size_t i);
+		void setDiagramOriginCorner(int i);
 
 		/*
 		Set diagram rotation
 		*/
-		void setDiagramRotaton(float r);
+		void rotateDiagram(float r);
 
 		/*
 		Set diagram resolution
