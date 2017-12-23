@@ -119,11 +119,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="StandardCursor.cpp" />
     <ClCompile Include="TextShape.cpp" />
     <ClCompile Include="GeometryDisplay.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="StandardCursor.hpp" />
     <ClInclude Include="TextShape.hpp" />
     <ClInclude Include="GeometryDisplay.hpp" />
   </ItemGroup>

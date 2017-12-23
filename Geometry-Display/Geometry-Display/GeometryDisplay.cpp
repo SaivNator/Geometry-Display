@@ -87,21 +87,18 @@ void Window::windowHandler() {
 }
 
 void Window::setMouseMove(bool v) {
+	window_mutex.lock();
 	mouse_move = v;
+	window_mutex.unlock();
 }
-
-//float normalizeFloat(float value, float min, float max) {
-//	return (value - min) / (max - min);
-//}
-//float deNormalizeFloat(float value, float min, float max) {
-//	return (value * (max - min) + min);
-//}
 
 void Window::updateMouseMove() {
 
 	if (diagram_area.contains(static_cast<float>(mouse_pos.x), static_cast<float>(mouse_pos.y))) {
 		if (mouse_left_down && !mouse_left_bounce) {
 			mouse_start_pos = window.mapPixelToCoords(mouse_pos, world_view);
+			sf::StandardCursor Cursor(sf::StandardCursor::WAIT);
+			Cursor.set(window.getSystemHandle());
 			mouse_left_bounce = true;
 		}
 		else if (mouse_left_down && mouse_left_bounce) {
@@ -110,6 +107,8 @@ void Window::updateMouseMove() {
 			world_view.move(m);
 		}
 		else if (!mouse_left_down && mouse_left_bounce) {
+			sf::StandardCursor Cursor(sf::StandardCursor::NORMAL);
+			Cursor.set(window.getSystemHandle());
 			mouse_left_bounce = false;
 		}
 	}
@@ -117,24 +116,18 @@ void Window::updateMouseMove() {
 }
 
 void Window::updateView() {
-
-	//diagram_area = sf::FloatRect(ui_border_thickness, ui_border_thickness, screen_view.getSize().x - ui_border_thickness, screen_view.getSize().y - ui_border_thickness);
-
 	diagram_area.left = ui_border_thickness;
 	diagram_area.top = ui_border_thickness;
 	diagram_area.width = screen_view.getSize().x - ui_border_thickness * 2;
 	diagram_area.height = screen_view.getSize().y - ui_border_thickness * 2;
-
 }
 
 void Window::renderUI() {
 	//render border rectangles
 	ui_vertex_array.clear();
 	std::vector<wykobi::rectangle<float>> rect_vec(4);
-
 	float win_width = screen_view.getSize().x;
 	float win_height = screen_view.getSize().y;
-
 	//top
 	rect_vec[0] = (wykobi::make_rectangle(0.f, 0.f, win_width, ui_border_thickness));
 	//bottom
@@ -393,5 +386,12 @@ std::vector<wykobi::triangle<float, 2>> GeometryDisplay::makeTriangleLine(float 
 std::vector<wykobi::triangle<float, 2>>GeometryDisplay::makeTriangleLine(wykobi::segment<float, 2> & seg, float thickness) {
 	return makeTriangleLine(seg[0].x, seg[0].y, seg[1].x, seg[1].y, thickness);
 }
+
+//float normalizeFloat(float value, float min, float max) {
+//	return (value - min) / (max - min);
+//}
+//float deNormalizeFloat(float value, float min, float max) {
+//	return (value * (max - min) + min);
+//}
 
 //end

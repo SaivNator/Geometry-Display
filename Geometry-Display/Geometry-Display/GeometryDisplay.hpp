@@ -22,6 +22,8 @@
 #include <wykobi.hpp>
 #include <wykobi_algorithm.hpp>
 
+#include "StandardCursor.hpp"
+
 namespace GeometryDisplay {
 	
 	class DrawObject {
