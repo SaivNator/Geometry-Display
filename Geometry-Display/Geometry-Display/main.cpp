@@ -34,7 +34,7 @@ int main() {
 		w.setMouseMove(true);
 		w.setUpdateInterval(10);
 
-		w.rotateDiagram(30.f);
+		//w.rotateDiagram(-90.f);
 
 		std::ostringstream title;
 		title << "Window ";

@@ -93,7 +93,7 @@ namespace GeometryDisplay {
 		int origin_corner = 0;	//0 == top left, clockwise motion
 		sf::FloatRect diagram_area;
 		wykobi::vector2d<float> diagram_line_resolution = wykobi::make_vector<float>(50.f, 50.f);
-		float diagram_line_thickness = 1.f;
+		float diagram_line_thickness = 2.f;
 		sf::Color diagram_line_color = sf::Color::Blue;
 
 		//mouse move
@@ -225,6 +225,11 @@ namespace GeometryDisplay {
 	Floor point to closest resolution
 	*/
 	float getClosestPointInRes(float v, float res);
+
+	/*
+	Get smallest bounding rectangle
+	*/
+	wykobi::rectangle<float> getBoundingRectangle(wykobi::polygon<float, 2> & poly);
 }
 
 #endif // !GeometryDisplay_HEADER

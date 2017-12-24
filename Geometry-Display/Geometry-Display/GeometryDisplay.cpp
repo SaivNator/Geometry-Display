@@ -156,40 +156,54 @@ float GeometryDisplay::getClosestPointInRes(float v, float res) {
 	return v - std::fmod(v, res);
 }
 
+wykobi::rectangle<float> GeometryDisplay::getBoundingRectangle(wykobi::polygon<float, 2> & poly) {
+	wykobi::point2d<float> low_point = poly[0];
+	wykobi::point2d<float> high_point = poly[0];
+	for (std::size_t i = 1; i < poly.size(); ++i) {
+		if (poly[i].x < low_point.x) {
+			low_point.x = poly[i].x;
+		}
+		if (poly[i].y < low_point.y) {
+			low_point.y = poly[i].y;
+		}
+		if (poly[i].x > high_point.x) {
+			high_point.x = poly[i].x;
+		}
+		if (poly[i].y > high_point.y) {
+			high_point.y = poly[i].y;
+		}
+	}
+	return wykobi::make_rectangle(low_point, high_point);
+}
+
 void Window::renderLines() {
 	diagram_vertex_array.clear();
 	diagram_text_vector.clear();
 	
-	
-	wykobi::point2d<float> centre = wykobi::make_point(world_view.getCenter().x, world_view.getCenter().y);
-	wykobi::rectangle<float> view_rect;
-	wykobi::polygon<float, 2> view_poly;
-	view_rect[0].x = world_view.getCenter().x - world_view.getSize().x / 2;
-	view_rect[0].y = world_view.getCenter().y - world_view.getSize().y / 2;
-	view_rect[1].x = world_view.getCenter().x + world_view.getSize().x / 2;
-	view_rect[1].y = world_view.getCenter().y + world_view.getSize().y / 2;
-	
-	view_poly = wykobi::make_polygon(view_rect);
-	view_poly = wykobi::rotate(world_view.getRotation(), view_poly, centre);
+	wykobi::polygon<float, 2> world_poly(4);
+	sf::Vector2f p;
+	p = window.mapPixelToCoords(sf::Vector2i(diagram_area.left, diagram_area.top), world_view);
+	world_poly[0] = wykobi::make_point(p.x, p.y);
+	p = window.mapPixelToCoords(sf::Vector2i(diagram_area.left + diagram_area.width, diagram_area.top), world_view);
+	world_poly[1] = wykobi::make_point(p.x, p.y);
+	p = window.mapPixelToCoords(sf::Vector2i(diagram_area.left + diagram_area.width, diagram_area.top + diagram_area.height), world_view);
+	world_poly[2] = wykobi::make_point(p.x, p.y);
+	p = window.mapPixelToCoords(sf::Vector2i(diagram_area.left, diagram_area.top + diagram_area.height), world_view);
+	world_poly[3] = wykobi::make_point(p.x, p.y);
 
-	std::cout << "poly: ";
-	for (std::size_t i = 0; i < 4; ++i) {
-		auto c = view_poly[i];
-		std::cout << c.x << ", " << c.y << "->";
-	}
-	std::cout << "\n";
+	wykobi::rectangle<float> bounding_rect = getBoundingRectangle(world_poly);
 
-
-	//view_polygon[0].x = 
-
-	/*
 	float x, y;
 	float max_x, max_y;
+
+	max_x = bounding_rect[1].x;
+	max_y = bounding_rect[1].y;
 	
 	//vertical lines
-	x = getClosestPointInRes(diagram_position.x, diagram_line_resolution.x);
-	y = diagram_position.y;
+	x = getClosestPointInRes(bounding_rect[0].x, diagram_line_resolution.x);
+	y = bounding_rect[0].y;
 	while (x < max_x) {
+
 		for (auto tri : makeTriangleLine(x, y, x, max_y, diagram_line_thickness)) {
 			for (std::size_t i = 0; i < tri.size(); ++i) {
 				sf::Vertex v;
@@ -212,8 +226,8 @@ void Window::renderLines() {
 		x += diagram_line_resolution.x;
 	}
 	//horizontal lines
-	x = diagram_position.x;
-	y = getClosestPointInRes(diagram_position.y, diagram_line_resolution.y);
+	x = bounding_rect[0].x;
+	y = getClosestPointInRes(bounding_rect[0].y, diagram_line_resolution.y);
 	while (y < max_y) {
 		for (auto tri : makeTriangleLine(x, y, max_x, y, diagram_line_thickness)) {
 			for (std::size_t i = 0; i < tri.size(); ++i) {
@@ -238,12 +252,12 @@ void Window::renderLines() {
 	}
 
 	//text
-	window.draw(diagram_vertex_array, line_states);
+	window.setView(world_view);
+	window.draw(diagram_vertex_array);
 	for (auto & t : diagram_text_vector) {
-		t.setRotation(-diagram_screen_rotation);
-		window.draw(t, line_states);
+		//t.setRotation(-diagram_screen_rotation);
+		window.draw(t);
 	}
-	*/
 }
 
 void Window::renderDrawObject() {
