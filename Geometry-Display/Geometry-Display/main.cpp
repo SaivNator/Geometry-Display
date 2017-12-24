@@ -24,7 +24,7 @@ int main() {
 
 	GeometryDisplay::LineShape line(wykobi::make_segment<float>(10, 10, 300, 400));
 	line.thickness = 10.f;
-	std::vector<GeometryDisplay::Window> win_vec(4);
+	std::vector<GeometryDisplay::Window> win_vec(1);
 	std::size_t i = 0;
 	for (auto & w : win_vec) {
 		w.create();
@@ -33,6 +33,8 @@ int main() {
 
 		w.setMouseMove(true);
 		w.setUpdateInterval(10);
+
+		w.rotateDiagram(30.f);
 
 		std::ostringstream title;
 		title << "Window ";

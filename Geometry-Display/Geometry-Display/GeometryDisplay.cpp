@@ -43,7 +43,6 @@ void Window::windowHandler() {
 				update_frame = true;
 				break;
 			case sf::Event::MouseMoved:
-
 				mouse_pos = sf::Vector2i(e.mouseMove.x, e.mouseMove.y);
 				update_frame = true;
 				break;
@@ -97,8 +96,8 @@ void Window::updateMouseMove() {
 	if (diagram_area.contains(static_cast<float>(mouse_pos.x), static_cast<float>(mouse_pos.y))) {
 		if (mouse_left_down && !mouse_left_bounce) {
 			mouse_start_pos = window.mapPixelToCoords(mouse_pos, world_view);
-			sf::StandardCursor Cursor(sf::StandardCursor::WAIT);
-			Cursor.set(window.getSystemHandle());
+			//sf::StandardCursor Cursor(sf::StandardCursor::WAIT);
+			//Cursor.set(window.getSystemHandle());
 			mouse_left_bounce = true;
 		}
 		else if (mouse_left_down && mouse_left_bounce) {
@@ -107,8 +106,8 @@ void Window::updateMouseMove() {
 			world_view.move(m);
 		}
 		else if (!mouse_left_down && mouse_left_bounce) {
-			sf::StandardCursor Cursor(sf::StandardCursor::NORMAL);
-			Cursor.set(window.getSystemHandle());
+			//sf::StandardCursor Cursor(sf::StandardCursor::NORMAL);
+			//Cursor.set(window.getSystemHandle());
 			mouse_left_bounce = false;
 		}
 	}
@@ -161,15 +160,32 @@ void Window::renderLines() {
 	diagram_vertex_array.clear();
 	diagram_text_vector.clear();
 	
-	sf::RenderStates line_states;
 	
+	wykobi::point2d<float> centre = wykobi::make_point(world_view.getCenter().x, world_view.getCenter().y);
+	wykobi::rectangle<float> view_rect;
+	wykobi::polygon<float, 2> view_poly;
+	view_rect[0].x = world_view.getCenter().x - world_view.getSize().x / 2;
+	view_rect[0].y = world_view.getCenter().y - world_view.getSize().y / 2;
+	view_rect[1].x = world_view.getCenter().x + world_view.getSize().x / 2;
+	view_rect[1].y = world_view.getCenter().y + world_view.getSize().y / 2;
 	
+	view_poly = wykobi::make_polygon(view_rect);
+	view_poly = wykobi::rotate(world_view.getRotation(), view_poly, centre);
+
+	std::cout << "poly: ";
+	for (std::size_t i = 0; i < 4; ++i) {
+		auto c = view_poly[i];
+		std::cout << c.x << ", " << c.y << "->";
+	}
+	std::cout << "\n";
+
+
+	//view_polygon[0].x = 
 
 	/*
 	float x, y;
 	float max_x, max_y;
-	max_x = diagram_position.x + diagram_world_size.x;
-	max_y = diagram_position.y + diagram_world_size.y;
+	
 	//vertical lines
 	x = getClosestPointInRes(diagram_position.x, diagram_line_resolution.x);
 	y = diagram_position.y;
@@ -222,7 +238,6 @@ void Window::renderLines() {
 	}
 
 	//text
-
 	window.draw(diagram_vertex_array, line_states);
 	for (auto & t : diagram_text_vector) {
 		t.setRotation(-diagram_screen_rotation);
