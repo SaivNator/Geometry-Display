@@ -230,6 +230,11 @@ namespace GeometryDisplay {
 	Get smallest bounding rectangle
 	*/
 	wykobi::rectangle<float> getBoundingRectangle(wykobi::polygon<float, 2> & poly);
+
+	/*
+	Check if segment is intersectiong polygon
+	*/
+	bool segmentIntersectPolygon(wykobi::segment<float, 2> & seg, wykobi::polygon<float, 2> & poly);
 }
 
 #endif // !GeometryDisplay_HEADER

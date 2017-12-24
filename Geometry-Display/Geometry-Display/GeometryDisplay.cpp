@@ -182,13 +182,13 @@ void Window::renderLines() {
 	
 	wykobi::polygon<float, 2> world_poly(4);
 	sf::Vector2f p;
-	p = window.mapPixelToCoords(sf::Vector2i(diagram_area.left, diagram_area.top), world_view);
+	p = window.mapPixelToCoords(sf::Vector2i((int)diagram_area.left, (int)diagram_area.top), world_view);
 	world_poly[0] = wykobi::make_point(p.x, p.y);
-	p = window.mapPixelToCoords(sf::Vector2i(diagram_area.left + diagram_area.width, diagram_area.top), world_view);
+	p = window.mapPixelToCoords(sf::Vector2i((int)diagram_area.left + (int)diagram_area.width, (int)diagram_area.top), world_view);
 	world_poly[1] = wykobi::make_point(p.x, p.y);
-	p = window.mapPixelToCoords(sf::Vector2i(diagram_area.left + diagram_area.width, diagram_area.top + diagram_area.height), world_view);
+	p = window.mapPixelToCoords(sf::Vector2i((int)diagram_area.left + (int)diagram_area.width, (int)diagram_area.top + (int)diagram_area.height), world_view);
 	world_poly[2] = wykobi::make_point(p.x, p.y);
-	p = window.mapPixelToCoords(sf::Vector2i(diagram_area.left, diagram_area.top + diagram_area.height), world_view);
+	p = window.mapPixelToCoords(sf::Vector2i((int)diagram_area.left, (int)diagram_area.top + (int)diagram_area.height), world_view);
 	world_poly[3] = wykobi::make_point(p.x, p.y);
 
 	wykobi::rectangle<float> bounding_rect = getBoundingRectangle(world_poly);
@@ -199,63 +199,123 @@ void Window::renderLines() {
 	max_x = bounding_rect[1].x;
 	max_y = bounding_rect[1].y;
 	
+	std::vector<wykobi::segment<float, 2>> vertical_segments;
+	std::vector<wykobi::segment<float, 2>> horizontal_segments;
+
 	//vertical lines
 	x = getClosestPointInRes(bounding_rect[0].x, diagram_line_resolution.x);
 	y = bounding_rect[0].y;
 	while (x < max_x) {
-
-		for (auto tri : makeTriangleLine(x, y, x, max_y, diagram_line_thickness)) {
-			for (std::size_t i = 0; i < tri.size(); ++i) {
-				sf::Vertex v;
-				v.position.x = tri[i].x;
-				v.position.y = tri[i].y;
-				v.color = diagram_line_color;
-				diagram_vertex_array.append(v);
+		wykobi::segment<float, 2> seg = wykobi::make_segment(x, y, x, max_y);
+		if (segmentIntersectPolygon(seg, world_poly)) {
+			wykobi::segment<float, 2> draw_seg;
+			bool first = false;
+			for (std::size_t i = 0; i < world_poly.size(); ++i) {
+				wykobi::segment<float, 2> test_seg = wykobi::edge(world_poly, i);
+				if (wykobi::intersect(seg, test_seg)) {
+					if (!first) {
+						draw_seg[0] = wykobi::intersection_point(seg, test_seg);
+						first = true;
+					}
+					else {
+						draw_seg[1] = wykobi::intersection_point(seg, test_seg);
+						break;
+					}
+				}
 			}
+
+			vertical_segments.push_back(draw_seg);
+
+			for (auto tri : makeTriangleLine(draw_seg, diagram_line_thickness)) {
+				for (std::size_t i = 0; i < tri.size(); ++i) {
+					sf::Vertex v;
+					v.position.x = tri[i].x;
+					v.position.y = tri[i].y;
+					v.color = diagram_line_color;
+					diagram_vertex_array.append(v);
+				}
+			}
+			//sf::Text line_pos_text;
+			//line_pos_text.setFont(*text_font);
+			//line_pos_text.setPosition(x, y - 20);
+			//line_pos_text.setCharacterSize(diagram_text_char_size);
+			//std::ostringstream t;
+			//t << x;
+			//line_pos_text.setString(t.str());
+			//diagram_text_vector.push_back(line_pos_text);
 		}
-
-		sf::Text line_pos_text;
-		line_pos_text.setFont(*text_font);
-		line_pos_text.setPosition(x, y - 20);
-		line_pos_text.setCharacterSize(diagram_text_char_size);
-		std::ostringstream t;
-		t << x;
-		line_pos_text.setString(t.str());
-		diagram_text_vector.push_back(line_pos_text);
-
 		x += diagram_line_resolution.x;
 	}
 	//horizontal lines
 	x = bounding_rect[0].x;
 	y = getClosestPointInRes(bounding_rect[0].y, diagram_line_resolution.y);
 	while (y < max_y) {
-		for (auto tri : makeTriangleLine(x, y, max_x, y, diagram_line_thickness)) {
-			for (std::size_t i = 0; i < tri.size(); ++i) {
-				sf::Vertex v;
-				v.position.x = tri[i].x;
-				v.position.y = tri[i].y;
-				v.color = diagram_line_color;
-				diagram_vertex_array.append(v);
+
+		wykobi::segment<float, 2> seg = wykobi::make_segment(x, y, max_x, y);
+
+		if (segmentIntersectPolygon(seg, world_poly)) {
+			wykobi::segment<float, 2> draw_seg;
+			bool first = false;
+			for (std::size_t i = 0; i < world_poly.size(); ++i) {
+				wykobi::segment<float, 2> test_seg = wykobi::edge(world_poly, i);
+				if (wykobi::intersect(seg, test_seg)) {
+					if (!first) {
+						draw_seg[0] = wykobi::intersection_point(seg, test_seg);
+						first = true;
+					}
+					else {
+						draw_seg[1] = wykobi::intersection_point(seg, test_seg);
+						break;
+					}
+				}
 			}
+
+			horizontal_segments.push_back(draw_seg);
+
+			for (auto tri : makeTriangleLine(draw_seg, diagram_line_thickness)) {
+				for (std::size_t i = 0; i < tri.size(); ++i) {
+					sf::Vertex v;
+					v.position.x = tri[i].x;
+					v.position.y = tri[i].y;
+					v.color = diagram_line_color;
+					diagram_vertex_array.append(v);
+				}
+			}
+
+			//sf::Text line_pos_text;
+			//line_pos_text.setFont(*text_font);
+			//line_pos_text.setPosition(x - 20, y);
+			//line_pos_text.setCharacterSize(diagram_text_char_size);
+			//std::ostringstream t;
+			//t << y;
+			//line_pos_text.setString(t.str());
+			//diagram_text_vector.push_back(line_pos_text);
 		}
-
-		sf::Text line_pos_text;
-		line_pos_text.setFont(*text_font);
-		line_pos_text.setPosition(x - 20, y);
-		line_pos_text.setCharacterSize(diagram_text_char_size);
-		std::ostringstream t;
-		t << y;
-		line_pos_text.setString(t.str());
-		diagram_text_vector.push_back(line_pos_text);
-
 		y += diagram_line_resolution.y;
 	}
 
 	//text
 	window.setView(world_view);
 	window.draw(diagram_vertex_array);
-	for (auto & t : diagram_text_vector) {
-		//t.setRotation(-diagram_screen_rotation);
+	window.setView(screen_view);
+	for (auto & seg : vertical_segments) {
+		sf::Text t;
+		t.setPosition(sf::Vector2f(window.mapCoordsToPixel(sf::Vector2f(seg[0].x, seg[0].y), world_view)));
+		std::ostringstream s;
+		s << seg[0].x;
+		t.setFont(*text_font);
+		t.setString(s.str());
+		t.setCharacterSize(diagram_text_char_size);
+		window.draw(t);
+	}
+	for (auto & seg : horizontal_segments) {
+		sf::Text t;
+		t.setPosition(sf::Vector2f(window.mapCoordsToPixel(sf::Vector2f(seg[0].x, seg[0].y), world_view)));
+		std::ostringstream s;
+		s << seg[0].y;
+		t.setFont(*text_font);
+		t.setString(s.str());
+		t.setCharacterSize(diagram_text_char_size);
 		window.draw(t);
 	}
 }
@@ -414,6 +474,15 @@ std::vector<wykobi::triangle<float, 2>> GeometryDisplay::makeTriangleLine(float 
 
 std::vector<wykobi::triangle<float, 2>>GeometryDisplay::makeTriangleLine(wykobi::segment<float, 2> & seg, float thickness) {
 	return makeTriangleLine(seg[0].x, seg[0].y, seg[1].x, seg[1].y, thickness);
+}
+
+bool GeometryDisplay::segmentIntersectPolygon(wykobi::segment<float, 2> & seg, wykobi::polygon<float, 2> & poly) {
+	for (std::size_t i = 0; i < poly.size(); ++i) {
+		if (wykobi::intersect(wykobi::edge(poly, i), seg)) {
+			return true;
+		}
+	}
+	return false;
 }
 
 //float normalizeFloat(float value, float min, float max) {
