@@ -25,6 +25,7 @@ void Window::windowHandler() {
 	window_mutex.lock();
 	window.create(sf::VideoMode(window_width, window_height), window_title, sf::Style::Resize | sf::Style::Resize | sf::Style::Titlebar | sf::Style::Close);
 	screen_view = window.getView();
+
 	window_mutex.unlock();
 	while (running) {
 		window_mutex.lock();
@@ -46,6 +47,15 @@ void Window::windowHandler() {
 				mouse_pos = sf::Vector2i(e.mouseMove.x, e.mouseMove.y);
 				update_frame = true;
 				break;
+			case sf::Event::MouseWheelScrolled:
+				if (e.mouseWheelScroll.delta > 0.f) {
+					zoomViewAtPixel({ e.mouseWheelScroll.x, e.mouseWheelScroll.y }, world_view, window, 1.f / mouse_zoom_amount);
+				}
+				else if (e.mouseWheelScroll.delta < 0.f) {
+					zoomViewAtPixel({ e.mouseWheelScroll.x, e.mouseWheelScroll.y }, world_view, window, mouse_zoom_amount);
+				}
+				update_frame = true;
+				break;
 			case sf::Event::MouseButtonPressed:
 				mouse_left_down = true;
 				break;
@@ -65,6 +75,9 @@ void Window::windowHandler() {
 
 			updateView();
 			
+			//if (mouse_zoom) {
+			//	updateMouseZoom();
+			//}
 			if (mouse_move) {
 				updateMouseMove();
 			}
@@ -85,10 +98,30 @@ void Window::windowHandler() {
 	window.close();
 }
 
+void Window::setMouseZoom(bool v) {
+	window_mutex.lock();
+	mouse_zoom = v;
+	window_mutex.unlock();
+}
+
+//void Window::updateMouseZoom() {
+//	if (mouse_middle_delta != 0.f) {	
+//		world_view.zoom(1 + mouse_middle_delta);
+//	}
+//}
+
 void Window::setMouseMove(bool v) {
 	window_mutex.lock();
 	mouse_move = v;
 	window_mutex.unlock();
+}
+
+void GeometryDisplay::zoomViewAtPixel(sf::Vector2i pixel, sf::View & view, sf::RenderWindow & window, float zoom) {
+	const sf::Vector2f beforeCoord = window.mapPixelToCoords(pixel, view);
+	view.zoom(zoom);
+	const sf::Vector2f afterCoord = window.mapPixelToCoords(pixel, view);
+	const sf::Vector2f offsetCoords = beforeCoord - afterCoord;
+	view.move(offsetCoords);
 }
 
 void Window::updateMouseMove() {
@@ -235,14 +268,6 @@ void Window::renderLines() {
 					diagram_vertex_array.append(v);
 				}
 			}
-			//sf::Text line_pos_text;
-			//line_pos_text.setFont(*text_font);
-			//line_pos_text.setPosition(x, y - 20);
-			//line_pos_text.setCharacterSize(diagram_text_char_size);
-			//std::ostringstream t;
-			//t << x;
-			//line_pos_text.setString(t.str());
-			//diagram_text_vector.push_back(line_pos_text);
 		}
 		x += diagram_line_resolution.x;
 	}
@@ -281,15 +306,6 @@ void Window::renderLines() {
 					diagram_vertex_array.append(v);
 				}
 			}
-
-			//sf::Text line_pos_text;
-			//line_pos_text.setFont(*text_font);
-			//line_pos_text.setPosition(x - 20, y);
-			//line_pos_text.setCharacterSize(diagram_text_char_size);
-			//std::ostringstream t;
-			//t << y;
-			//line_pos_text.setString(t.str());
-			//diagram_text_vector.push_back(line_pos_text);
 		}
 		y += diagram_line_resolution.y;
 	}
@@ -299,20 +315,26 @@ void Window::renderLines() {
 	window.draw(diagram_vertex_array);
 	window.setView(screen_view);
 	for (auto & seg : vertical_segments) {
+
+		std::size_t index = (seg[0].y < seg[1].y) ? 0 : 1;
+
 		sf::Text t;
-		t.setPosition(sf::Vector2f(window.mapCoordsToPixel(sf::Vector2f(seg[0].x, seg[0].y), world_view)));
+		t.setPosition(sf::Vector2f(window.mapCoordsToPixel(sf::Vector2f(seg[index].x, seg[index].y), world_view)));
 		std::ostringstream s;
-		s << seg[0].x;
+		s << seg[index].x;
 		t.setFont(*text_font);
 		t.setString(s.str());
 		t.setCharacterSize(diagram_text_char_size);
 		window.draw(t);
 	}
 	for (auto & seg : horizontal_segments) {
+
+		std::size_t index = (seg[0].x < seg[1].x) ? 0 : 1;
+
 		sf::Text t;
-		t.setPosition(sf::Vector2f(window.mapCoordsToPixel(sf::Vector2f(seg[0].x, seg[0].y), world_view)));
+		t.setPosition(sf::Vector2f(window.mapCoordsToPixel(sf::Vector2f(seg[index].x, seg[index].y), world_view)));
 		std::ostringstream s;
-		s << seg[0].y;
+		s << seg[index].y;
 		t.setFont(*text_font);
 		t.setString(s.str());
 		t.setCharacterSize(diagram_text_char_size);

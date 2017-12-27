@@ -28,10 +28,11 @@ int main() {
 	std::size_t i = 0;
 	for (auto & w : win_vec) {
 		w.create();
-		w.setDiagramPosition(0, 100);
+		//w.setDiagramPosition(0, 100);
 		w.setDiagramOriginCorner(i);
 
 		w.setMouseMove(true);
+		w.setMouseZoom(true);
 		w.setUpdateInterval(10);
 
 		//w.rotateDiagram(90.f);

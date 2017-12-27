@@ -71,18 +71,17 @@ namespace GeometryDisplay {
 		bool running = true;
 
 		std::mutex window_mutex;
+		std::thread window_thread;
 
 		std::mutex draw_object_vec_mutex;
 		std::vector<std::unique_ptr<DrawObject>> draw_object_vec;
 		sf::VertexArray draw_object_vertex_array = sf::VertexArray(sf::Triangles);
-		//std::vector<sf::Text> shape_text_vec;
+		std::vector<sf::Text> shape_text_vec;
 		
 		sf::VertexArray ui_vertex_array = sf::VertexArray(sf::Triangles);
 		std::vector<sf::Text> ui_text_vector;
 		float ui_border_thickness = 50.f;
 		sf::Color ui_border_color = sf::Color(129, 129, 129);
-
-		std::thread window_thread;
 
 		sf::VertexArray diagram_vertex_array = sf::VertexArray(sf::Triangles);
 		std::vector<sf::Text> diagram_text_vector;
@@ -104,6 +103,11 @@ namespace GeometryDisplay {
 		sf::Vector2f mouse_current_pos;
 		sf::Vector2f mouse_start_pos;
 
+		//mouse zoom
+		bool mouse_zoom = false;
+		float mouse_zoom_amount = 1.1f;
+		bool mouse_middle_down = false;
+
 		/*
 		Window thread function
 		*/
@@ -113,6 +117,11 @@ namespace GeometryDisplay {
 		Update mouse move
 		*/
 		void updateMouseMove();
+
+		/*
+		Update mouse zoom
+		*/
+		void updateMouseZoom();
 
 		/*
 		Update view
@@ -151,6 +160,11 @@ namespace GeometryDisplay {
 		void setMouseMove(bool v);
 
 		/*
+		Set mouse zoom
+		*/
+		void setMouseZoom(bool v);
+
+		/*
 		Set diagram render corner
 		*/
 		void setDiagramOriginCorner(int i);
@@ -169,6 +183,11 @@ namespace GeometryDisplay {
 		Set diagram position
 		*/
 		void setDiagramPosition(float x, float y);
+
+		/*
+		Zoom diagram
+		*/
+		void zoomDiagram(float scalar);
 
 		/*
 		Set update interval
@@ -235,6 +254,11 @@ namespace GeometryDisplay {
 	Check if segment is intersectiong polygon
 	*/
 	bool segmentIntersectPolygon(wykobi::segment<float, 2> & seg, wykobi::polygon<float, 2> & poly);
+
+	/*
+	Zoom view at pixel
+	*/
+	void zoomViewAtPixel(sf::Vector2i pixel, sf::View & view, sf::RenderWindow & window, float zoom);
 }
 
 #endif // !GeometryDisplay_HEADER
