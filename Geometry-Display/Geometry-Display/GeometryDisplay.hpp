@@ -29,8 +29,11 @@ namespace GeometryDisplay {
 	class DrawObject {
 	public:
 		std::string name;
-		sf::Color color = sf::Color::White;
+		sf::Color fill_color;
+		sf::Color line_color;
 		bool outer_line = false;
+		bool inner_fill = true;
+		float line_thickness = 2.f;
 		virtual void appendVertex(sf::VertexArray & vertex_arr) = 0;
 		virtual DrawObject* clone() = 0;
 	};
@@ -38,7 +41,8 @@ namespace GeometryDisplay {
 	public:
 		wykobi::triangle<float, 2> triangle;
 		TriangleShape(float x0, float y0, float x1, float y1, float x2, float y2);
-		TriangleShape(std::vector<sf::Vector2f> & vec);
+		TriangleShape* clone() override;
+		void appendVertex(sf::VertexArray & vertex_arr) override;
 	};
 	class PolygonShape : public DrawObject {
 	public:
@@ -89,7 +93,6 @@ namespace GeometryDisplay {
 
 		sf::View screen_view;
 		sf::View world_view;	
-		int origin_corner = 0;	//0 == top left, clockwise motion
 		sf::FloatRect diagram_area;
 		wykobi::vector2d<float> diagram_line_resolution = wykobi::make_vector<float>(50.f, 50.f);
 		float diagram_line_thickness = 2.f;
@@ -112,16 +115,6 @@ namespace GeometryDisplay {
 		Window thread function
 		*/
 		void windowHandler();
-
-		/*
-		Update mouse move
-		*/
-		void updateMouseMove();
-
-		/*
-		Update mouse zoom
-		*/
-		void updateMouseZoom();
 
 		/*
 		Update view
@@ -163,11 +156,6 @@ namespace GeometryDisplay {
 		Set mouse zoom
 		*/
 		void setMouseZoom(bool v);
-
-		/*
-		Set diagram render corner
-		*/
-		void setDiagramOriginCorner(int i);
 
 		/*
 		Set diagram rotation

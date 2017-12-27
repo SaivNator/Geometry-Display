@@ -40,11 +40,6 @@ void Window::windowHandler() {
 				window_width = e.size.width;//window.getSize().x;
 				window_height = e.size.height;//window.getSize().y;
 				screen_view = sf::View(sf::FloatRect(0.f, 0.f, static_cast<float>(window_width), static_cast<float>(window_height)));
-				
-				update_frame = true;
-				break;
-			case sf::Event::MouseMoved:
-				mouse_pos = sf::Vector2i(e.mouseMove.x, e.mouseMove.y);
 				update_frame = true;
 				break;
 			case sf::Event::MouseWheelScrolled:
@@ -56,11 +51,33 @@ void Window::windowHandler() {
 				}
 				update_frame = true;
 				break;
+			case sf::Event::MouseMoved:
+				mouse_pos = { e.mouseMove.x, e.mouseMove.y };
+				if (mouse_move) {
+					if (mouse_left_bounce) {
+						mouse_current_pos = window.mapPixelToCoords(mouse_pos, world_view);
+						sf::Vector2f m = mouse_start_pos - mouse_current_pos;
+						world_view.move(m);
+					}
+					update_frame = true;
+				}
+				break;
 			case sf::Event::MouseButtonPressed:
+				mouse_pos = { e.mouseButton.x, e.mouseButton.y };
 				mouse_left_down = true;
+				if (mouse_move) {
+					if (diagram_area.contains(static_cast<float>(mouse_pos.x), static_cast<float>(mouse_pos.y))) {
+						if (!mouse_left_bounce) {
+							mouse_start_pos = window.mapPixelToCoords(mouse_pos, world_view);
+							mouse_left_bounce = true;
+						}
+					}
+				}
 				break;
 			case sf::Event::MouseButtonReleased:
+				mouse_pos = { e.mouseButton.x, e.mouseButton.y };
 				mouse_left_down = false;
+				mouse_left_bounce = false;
 				break;
 			default:
 				break;
@@ -74,19 +91,12 @@ void Window::windowHandler() {
 			window.setSize(sf::Vector2u(window_width, window_height));
 
 			updateView();
-			
-			//if (mouse_zoom) {
-			//	updateMouseZoom();
-			//}
-			if (mouse_move) {
-				updateMouseMove();
-			}
+
+			renderLines();
 			
 			renderDrawObject();
 
 			renderUI();
-
-			renderLines();
 			
 			window.display();
 			update_frame = false;
@@ -104,12 +114,6 @@ void Window::setMouseZoom(bool v) {
 	window_mutex.unlock();
 }
 
-//void Window::updateMouseZoom() {
-//	if (mouse_middle_delta != 0.f) {	
-//		world_view.zoom(1 + mouse_middle_delta);
-//	}
-//}
-
 void Window::setMouseMove(bool v) {
 	window_mutex.lock();
 	mouse_move = v;
@@ -122,29 +126,6 @@ void GeometryDisplay::zoomViewAtPixel(sf::Vector2i pixel, sf::View & view, sf::R
 	const sf::Vector2f afterCoord = window.mapPixelToCoords(pixel, view);
 	const sf::Vector2f offsetCoords = beforeCoord - afterCoord;
 	view.move(offsetCoords);
-}
-
-void Window::updateMouseMove() {
-
-	if (diagram_area.contains(static_cast<float>(mouse_pos.x), static_cast<float>(mouse_pos.y))) {
-		if (mouse_left_down && !mouse_left_bounce) {
-			mouse_start_pos = window.mapPixelToCoords(mouse_pos, world_view);
-			//sf::StandardCursor Cursor(sf::StandardCursor::WAIT);
-			//Cursor.set(window.getSystemHandle());
-			mouse_left_bounce = true;
-		}
-		else if (mouse_left_down && mouse_left_bounce) {
-			mouse_current_pos = window.mapPixelToCoords(mouse_pos, world_view);
-			sf::Vector2f m = mouse_start_pos - mouse_current_pos;
-			world_view.move(m);
-		}
-		else if (!mouse_left_down && mouse_left_bounce) {
-			//sf::StandardCursor Cursor(sf::StandardCursor::NORMAL);
-			//Cursor.set(window.getSystemHandle());
-			mouse_left_bounce = false;
-		}
-	}
-	
 }
 
 void Window::updateView() {
@@ -377,14 +358,7 @@ void Window::setSize(int w, int h) {
 
 void Window::setDiagramPosition(float x, float y) {
 	window_mutex.lock();
-	world_view.setCenter(x + world_view.getSize().x / 2 , y + world_view.getSize().y / 2);
-	update_frame = true;
-	window_mutex.unlock();
-}
-
-void Window::setDiagramOriginCorner(int i) {
-	window_mutex.lock();
-	origin_corner = i;
+	world_view.setCenter(x + world_view.getSize().x / 2, y + world_view.getSize().y / 2);
 	update_frame = true;
 	window_mutex.unlock();
 }
@@ -446,18 +420,32 @@ PolygonShape* GeometryDisplay::PolygonShape::clone() {
 }
 
 void PolygonShape::appendVertex(sf::VertexArray & vertex_arr) {
-	std::vector<wykobi::triangle<float, 2>> triangle_vec;
-	wykobi::algorithm::polygon_triangulate<wykobi::point2d<float>>(polygon, std::back_inserter(triangle_vec));
-	for (wykobi::triangle<float, 2> & tri : triangle_vec) {
-		for (std::size_t i = 0; i < tri.size(); ++i) {
-			sf::Vertex v;
-			v.position = sf::Vector2f(tri[i].x, tri[i].y);
-			v.color = color;
-			vertex_arr.append(v);
+	if (inner_fill) {
+		std::vector<wykobi::triangle<float, 2>> triangle_vec;
+		wykobi::algorithm::polygon_triangulate<wykobi::point2d<float>>(polygon, std::back_inserter(triangle_vec));
+		for (wykobi::triangle<float, 2> & tri : triangle_vec) {
+			for (std::size_t i = 0; i < tri.size(); ++i) {
+				sf::Vertex v;
+				v.position = sf::Vector2f(tri[i].x, tri[i].y);
+				v.color = fill_color;
+				vertex_arr.append(v);
+			}
+		}
+	}
+	if (outer_line) {
+		for (std::size_t i = 0; i < polygon.size(); ++i) {
+			wykobi::segment<float, 2> seg = wykobi::edge(polygon, i);
+			for (wykobi::triangle<float, 2> & tri : makeTriangleLine(seg, line_thickness)) {
+				for (std::size_t j = 0; j < tri.size(); ++j) {
+					sf::Vertex v;
+					v.position = sf::Vector2f(tri[j].x, tri[j].y);
+					v.color = line_color;
+					vertex_arr.append(v);
+				}
+			}
 		}
 	}
 }
-
 LineShape::LineShape(wykobi::segment<float, 2> seg) {
 	segment = seg;
 }
@@ -467,12 +455,14 @@ LineShape* LineShape::clone() {
 }
 
 void LineShape::appendVertex(sf::VertexArray & vertex_arr) {
-	for (wykobi::triangle<float, 2> & tri : makeTriangleLine(segment, thickness)) {
-		for (std::size_t i = 0; i < tri.size(); ++i) {
-			sf::Vertex v;
-			v.position = sf::Vector2f(tri[i].x, tri[i].y);
-			v.color = color;
-			vertex_arr.append(v);
+	if (inner_fill) {
+		for (wykobi::triangle<float, 2> & tri : makeTriangleLine(segment, thickness)) {
+			for (std::size_t i = 0; i < tri.size(); ++i) {
+				sf::Vertex v;
+				v.position = sf::Vector2f(tri[i].x, tri[i].y);
+				v.color = fill_color;
+				vertex_arr.append(v);
+			}
 		}
 	}
 }
