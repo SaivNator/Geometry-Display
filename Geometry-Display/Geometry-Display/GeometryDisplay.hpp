@@ -33,7 +33,7 @@ namespace GeometryDisplay {
 		sf::Color line_color;
 		bool outer_line = false;
 		bool inner_fill = true;
-		float line_thickness = 2.f;
+		float outer_line_thickness = 2.f;
 		virtual void appendVertex(sf::VertexArray & vertex_arr) = 0;
 		virtual DrawObject* clone() = 0;
 	};
@@ -60,11 +60,50 @@ namespace GeometryDisplay {
 		void appendVertex(sf::VertexArray & vertex_arr) override;
 	};
 
+	class ToggleButton : public sf::Drawable {
+	private:
+		sf::IntRect area;
+		bool toggle = false;
+		bool bounce = false;
+
+		virtual void draw(sf::RenderTarget & target, sf::RenderStates states) const;
+
+	public:
+		std::string not_toggle_text = "button off";
+		std::string toggle_text = "button on";
+		sf::Color not_toggle_text_color;
+		sf::Color toggle_text_color;
+		sf::Color not_toggle_color;
+		sf::Color toggle_color;
+		unsigned int text_char_size = 10;
+
+		ToggleButton(sf::IntRect button_area);
+
+		/*
+		Check if mouse_pos is inseide area, if true then toggle
+		*/
+		void click(const sf::Vector2i mouse_pos);
+
+		/*
+		Reset bounce of button
+		*/
+		void release();
+
+		/*
+		Get button state
+		false = not toggeled
+		true = toggeled
+		*/
+		bool getState();
+
+		void appendVertex(sf::VertexArray & vertex_arr);
+	};
+
 	class Window {
 	private:
 		sf::RenderWindow window;
 
-		std::string window_title = "Geometry Display FeelsGoodMan Clap";
+		std::string window_title = "Geometry Display";
 
 		std::shared_ptr<sf::Font> text_font;
 
@@ -77,6 +116,8 @@ namespace GeometryDisplay {
 		std::mutex window_mutex;
 		std::thread window_thread;
 
+		sf::Color window_background_color = sf::Color::White;
+
 		std::mutex draw_object_vec_mutex;
 		std::vector<std::unique_ptr<DrawObject>> draw_object_vec;
 		sf::VertexArray draw_object_vertex_array = sf::VertexArray(sf::Triangles);
@@ -87,8 +128,9 @@ namespace GeometryDisplay {
 		float ui_border_thickness = 50.f;
 		sf::Color ui_border_color = sf::Color(129, 129, 129);
 
-		sf::VertexArray diagram_vertex_array = sf::VertexArray(sf::Triangles);
+		sf::VertexArray diagram_vertex_array = sf::VertexArray(sf::Lines);
 		std::vector<sf::Text> diagram_text_vector;
+		sf::Color diagram_text_color = sf::Color::Black;
 		unsigned int diagram_text_char_size = 10;
 
 		sf::View screen_view;

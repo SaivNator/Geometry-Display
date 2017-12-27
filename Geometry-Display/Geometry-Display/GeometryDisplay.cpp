@@ -4,6 +4,61 @@
 
 using namespace GeometryDisplay;
 
+ToggleButton::ToggleButton(sf::IntRect button_area) {
+	area = button_area;
+}
+
+void ToggleButton::click(const sf::Vector2i mouse_pos) {
+	if (!bounce) {
+		if (area.contains(mouse_pos)) {
+			toggle = !toggle;
+			bounce = true;
+		}
+	}
+}
+
+void ToggleButton::release() {
+	bounce = false;
+}
+
+bool ToggleButton::getState() {
+	return toggle;
+}
+
+void ToggleButton::draw(sf::RenderTarget & target, sf::RenderStates states) const {
+	sf::VertexArray vertex_array(sf::Triangles);
+	sf::Text text;
+	wykobi::rectangle<float> rect = wykobi::make_rectangle((float)area.left, (float)area.top, (float)area.left + (float)area.width, (float)area.top + (float)area.height);
+	std::vector<wykobi::triangle<float, 2>> triangle_vec;
+	wykobi::algorithm::polygon_triangulate<wykobi::point2d<float>>(wykobi::make_polygon(rect), std::back_inserter(triangle_vec));
+	for (wykobi::triangle<float, 2> & tri : triangle_vec) {
+		for (std::size_t i = 0; i < tri.size(); ++i) {
+			sf::Vertex v;
+			v.position.x = tri[i].x;
+			v.position.y = tri[i].y;
+			if (toggle) {
+				v.color = toggle_color;
+			}
+			else {
+				v.color = not_toggle_color;
+			}
+			vertex_array.append(v);
+		}
+	}
+	text.setPosition((float)area.left, (float)area.top);
+	text.setCharacterSize(text_char_size);
+	if (toggle) {
+		text.setString(toggle_text);
+		text.setFillColor(toggle_text_color);
+	}
+	else {
+		text.setString(not_toggle_text);
+		text.setFillColor(not_toggle_text_color);
+	}
+	target.draw(vertex_array, states);
+	target.draw(text, states);
+}
+
 Window::Window() { 
 	text_font = std::shared_ptr<sf::Font>(new sf::Font());
 	if (!text_font->loadFromFile("fonts/arial.ttf")) {
@@ -16,7 +71,6 @@ Window::Window(std::shared_ptr<sf::Font> font_ptr) {
 }
 
 void Window::create() {
-	//std::cout << ">>>" << std::this_thread::get_id() << "<<<: " << "init()\n";
 	window_thread = std::thread(&Window::windowHandler, this);
 	update_frame = true;
 }
@@ -85,7 +139,7 @@ void Window::windowHandler() {
 		}
 
 		if (update_frame) {
-			window.clear();
+			window.clear(window_background_color);
 
 			window.setTitle(window_title);
 			window.setSize(sf::Vector2u(window_width, window_height));
@@ -240,14 +294,12 @@ void Window::renderLines() {
 
 			vertical_segments.push_back(draw_seg);
 
-			for (auto tri : makeTriangleLine(draw_seg, diagram_line_thickness)) {
-				for (std::size_t i = 0; i < tri.size(); ++i) {
-					sf::Vertex v;
-					v.position.x = tri[i].x;
-					v.position.y = tri[i].y;
-					v.color = diagram_line_color;
-					diagram_vertex_array.append(v);
-				}
+			for (std::size_t i = 0; i < draw_seg.size(); ++i) {
+				sf::Vertex v;
+				v.color = diagram_line_color;
+				v.position.x = seg[i].x;
+				v.position.y = seg[i].y;
+				diagram_vertex_array.append(v);
 			}
 		}
 		x += diagram_line_resolution.x;
@@ -256,9 +308,7 @@ void Window::renderLines() {
 	x = bounding_rect[0].x;
 	y = getClosestPointInRes(bounding_rect[0].y, diagram_line_resolution.y);
 	while (y < max_y) {
-
 		wykobi::segment<float, 2> seg = wykobi::make_segment(x, y, max_x, y);
-
 		if (segmentIntersectPolygon(seg, world_poly)) {
 			wykobi::segment<float, 2> draw_seg;
 			bool first = false;
@@ -275,17 +325,13 @@ void Window::renderLines() {
 					}
 				}
 			}
-
 			horizontal_segments.push_back(draw_seg);
-
-			for (auto tri : makeTriangleLine(draw_seg, diagram_line_thickness)) {
-				for (std::size_t i = 0; i < tri.size(); ++i) {
-					sf::Vertex v;
-					v.position.x = tri[i].x;
-					v.position.y = tri[i].y;
-					v.color = diagram_line_color;
-					diagram_vertex_array.append(v);
-				}
+			for (std::size_t i = 0; i < draw_seg.size(); ++i) {
+				sf::Vertex v;
+				v.color = diagram_line_color;
+				v.position.x = seg[i].x;
+				v.position.y = seg[i].y;
+				diagram_vertex_array.append(v);
 			}
 		}
 		y += diagram_line_resolution.y;
@@ -296,10 +342,9 @@ void Window::renderLines() {
 	window.draw(diagram_vertex_array);
 	window.setView(screen_view);
 	for (auto & seg : vertical_segments) {
-
 		std::size_t index = (seg[0].y < seg[1].y) ? 0 : 1;
-
 		sf::Text t;
+		t.setFillColor(diagram_text_color);
 		t.setPosition(sf::Vector2f(window.mapCoordsToPixel(sf::Vector2f(seg[index].x, seg[index].y), world_view)));
 		std::ostringstream s;
 		s << seg[index].x;
@@ -309,10 +354,9 @@ void Window::renderLines() {
 		window.draw(t);
 	}
 	for (auto & seg : horizontal_segments) {
-
 		std::size_t index = (seg[0].x < seg[1].x) ? 0 : 1;
-
 		sf::Text t;
+		t.setFillColor(diagram_text_color);
 		t.setPosition(sf::Vector2f(window.mapCoordsToPixel(sf::Vector2f(seg[index].x, seg[index].y), world_view)));
 		std::ostringstream s;
 		s << seg[index].y;
@@ -435,7 +479,7 @@ void PolygonShape::appendVertex(sf::VertexArray & vertex_arr) {
 	if (outer_line) {
 		for (std::size_t i = 0; i < polygon.size(); ++i) {
 			wykobi::segment<float, 2> seg = wykobi::edge(polygon, i);
-			for (wykobi::triangle<float, 2> & tri : makeTriangleLine(seg, line_thickness)) {
+			for (wykobi::triangle<float, 2> & tri : makeTriangleLine(seg, outer_line_thickness)) {
 				for (std::size_t j = 0; j < tri.size(); ++j) {
 					sf::Vertex v;
 					v.position = sf::Vector2f(tri[j].x, tri[j].y);

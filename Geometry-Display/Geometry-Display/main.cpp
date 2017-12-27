@@ -12,6 +12,8 @@
 #include <SFML\Graphics.hpp>
 #include <wykobi.hpp>
 
+#include <nfd.h>
+
 #include "GeometryDisplay.hpp"
 #include "TextShape.hpp"
 
@@ -54,9 +56,6 @@ int main() {
 
 		++i;
 	}
-
-
-
 
 	for (auto & w : win_vec) {
 		w.join();
