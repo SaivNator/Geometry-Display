@@ -34,7 +34,7 @@ int main() {
 	std::size_t i = 0;
 	for (auto & w : win_vec) {
 		w.create();
-
+		w.setMouseMove(true);
 		w.setUpdateInterval(10);
 
 		std::ostringstream title;

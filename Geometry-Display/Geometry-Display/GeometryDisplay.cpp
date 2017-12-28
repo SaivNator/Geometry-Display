@@ -25,6 +25,10 @@ void ToggleButton::click(const sf::Vector2i mouse_pos) {
 	}
 }
 
+void ToggleButton::setToggle(bool v) {
+	toggle = v;
+}
+
 void ToggleButton::release() {
 	bounce = false;
 }
@@ -102,16 +106,10 @@ void Window::windowHandler() {
 	window_mutex.lock();
 	window.create(sf::VideoMode(window_size.x, window_size.y), window_title, sf::Style::Resize | sf::Style::Resize | sf::Style::Titlebar | sf::Style::Close);
 	screen_view = window.getView();
+	world_view = sf::View({ 0.f, 0.f, 100.f, 100.f });
 	updateView();
-	world_view = sf::View(diagram_area);
-	world_view.setViewport(sf::FloatRect(
-		normalize(diagram_area.left, 0.f, (float)window_size.x),
-		normalize(diagram_area.top, 0.f, (float)window_size.y),
-		normalize(diagram_area.left + diagram_area.width, 0.f, (float)window_size.x),
-		normalize(diagram_area.top + diagram_area.height, 0.f, (float)window_size.y)
-	));
+	
 	world_view.setCenter(world_view.getSize().x / 2, world_view.getSize().y / 2);
-
 
 	window_mutex.unlock();
 	while (running) {
@@ -207,7 +205,7 @@ void Window::windowHandler() {
 
 void Window::setMouseMove(bool v) {
 	window_mutex.lock();
-	mouse_move = v;
+	mouse_move_button.setToggle(v);
 	window_mutex.unlock();
 }
 
@@ -224,6 +222,12 @@ void Window::updateView() {
 	diagram_area.top = ui_border_thickness;
 	diagram_area.width = static_cast<float>(window_size.x) - ui_border_thickness * 2;
 	diagram_area.height = static_cast<float>(window_size.y) - ui_border_thickness * 2;
+	world_view.setViewport(sf::FloatRect(
+		normalize(diagram_area.left, 0.f, (float)window_size.x),
+		normalize(diagram_area.top, 0.f, (float)window_size.y),
+		normalize(diagram_area.left + diagram_area.width, 0.f, (float)window_size.x),
+		normalize(diagram_area.top + diagram_area.height, 0.f, (float)window_size.y)
+	));
 }
 
 void Window::renderUI() {

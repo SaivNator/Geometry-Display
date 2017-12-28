@@ -82,6 +82,11 @@ namespace GeometryDisplay {
 		unsigned int text_char_size = 10;
 
 		/*
+		Override button, set toggle
+		*/
+		void setToggle(bool v);
+
+		/*
 		Set Button area
 		*/
 		void setArea(sf::IntRect button_area);
@@ -165,11 +170,7 @@ namespace GeometryDisplay {
 		float mouse_zoom_amount = 1.1f;
 		bool mouse_middle_down = false;
 
-		/*
-		Auto size diagram
-		Based on shapes in window
-		*/
-		void autoSize();
+		
 
 		/*
 		Window thread function
@@ -205,6 +206,12 @@ namespace GeometryDisplay {
 		void addShape(wykobi::polygon<float, 2> poly);
 		void addShape(wykobi::segment<float, 2> seg);
 		void clearShapeVec();
+
+		/*
+		Auto size diagram
+		Based on shapes in window
+		*/
+		void autoSize();
 
 		/*
 		Set mouse move
