@@ -13,7 +13,6 @@
 #include <wykobi.hpp>
 
 #include "GeometryDisplay.hpp"
-#include "TextShape.hpp"
 
 #include "FileDialog.hpp"
 
@@ -45,6 +44,9 @@ int main() {
 		w.addShape(line);
 
 		for (GeometryDisplay::DrawObject & o : poly_vec) {
+
+			o.name = "POLYGONJAJAJA";
+
 			o.inner_fill = true;
 			o.outer_line = true;
 			o.fill_color = sf::Color::Green;

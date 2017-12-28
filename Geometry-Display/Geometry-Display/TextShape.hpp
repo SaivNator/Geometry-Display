@@ -35,6 +35,7 @@ namespace GeometryDisplay {
 
 		void appendVertex(sf::VertexArray & vertex_arr) override;
 
+		sf::Vector2f getCentroid() override;
 
 		////////////////////////////////////////////////////////////
 		/// \brief Enumeration of the string drawing styles

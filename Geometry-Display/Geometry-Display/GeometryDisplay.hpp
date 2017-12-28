@@ -34,6 +34,7 @@ namespace GeometryDisplay {
 		bool outer_line = false;
 		bool inner_fill = true;
 		float outer_line_thickness = 2.f;
+		virtual sf::Vector2f getCentroid() = 0;
 		virtual void appendVertex(sf::VertexArray & vertex_arr) = 0;
 		virtual DrawObject* clone() = 0;
 	};
@@ -49,6 +50,7 @@ namespace GeometryDisplay {
 		wykobi::polygon<float, 2> polygon;
 		PolygonShape(wykobi::polygon<float, 2> poly);
 		PolygonShape* clone() override;
+		virtual sf::Vector2f getCentroid() override;
 		void appendVertex(sf::VertexArray & vertex_arr) override;
 	};
 	class LineShape : public DrawObject {
@@ -57,6 +59,7 @@ namespace GeometryDisplay {
 		float thickness = 1.f;
 		LineShape(wykobi::segment<float, 2> seg);
 		LineShape* clone() override;
+		virtual sf::Vector2f getCentroid() override;
 		void appendVertex(sf::VertexArray & vertex_arr) override;
 	};
 
@@ -69,8 +72,6 @@ namespace GeometryDisplay {
 		std::shared_ptr<sf::Font> text_font;
 
 		virtual void draw(sf::RenderTarget & target, sf::RenderStates states) const;
-
-
 	public:
 		std::string not_toggle_text = "button off";
 		std::string toggle_text = "button on";
@@ -122,8 +123,7 @@ namespace GeometryDisplay {
 		std::shared_ptr<sf::Font> text_font;
 
 		int update_interval = 50;				//in ms
-		unsigned int window_width = 500;		//in px
-		unsigned int window_height = 500;		//in px
+		sf::Vector2u window_size = { 500, 500 };
 		bool update_frame = false;
 		bool running = true;
 
@@ -135,7 +135,7 @@ namespace GeometryDisplay {
 		std::mutex draw_object_vec_mutex;
 		std::vector<std::unique_ptr<DrawObject>> draw_object_vec;
 		sf::VertexArray draw_object_vertex_array = sf::VertexArray(sf::Triangles);
-		std::vector<sf::Text> shape_text_vec;
+		
 		
 		sf::VertexArray ui_vertex_array = sf::VertexArray(sf::Triangles);
 		std::vector<sf::Text> ui_text_vector;
@@ -164,6 +164,12 @@ namespace GeometryDisplay {
 		ToggleButton mouse_move_button;
 		float mouse_zoom_amount = 1.1f;
 		bool mouse_middle_down = false;
+
+		/*
+		Auto size diagram
+		Based on shapes in window
+		*/
+		void autoSize();
 
 		/*
 		Window thread function
@@ -198,7 +204,6 @@ namespace GeometryDisplay {
 		void addShape(DrawObject & shape);
 		void addShape(wykobi::polygon<float, 2> poly);
 		void addShape(wykobi::segment<float, 2> seg);
-		//std::vector<Shape*> addShape(std::vector<wykobi::polygon<float, 2>> & vec);
 		void clearShapeVec();
 
 		/*
@@ -238,14 +243,9 @@ namespace GeometryDisplay {
 		void setTitle(std::string title);
 
 		/*
-		Get window width
+		Get window size
 		*/
-		int getWindowWidth();
-
-		/*
-		Get window height
-		*/
-		int getWindowHeight();
+		sf::Vector2u getWindowSize();
 
 		/*
 		Wait for window_thread to close
@@ -256,7 +256,8 @@ namespace GeometryDisplay {
 		/*
 		Init display
 		*/
-		void create();										
+		void create();				
+		void create(sf::Vector2u win_size);
 
 		/*
 		Close display
@@ -291,6 +292,27 @@ namespace GeometryDisplay {
 	Zoom view at pixel
 	*/
 	void zoomViewAtPixel(sf::Vector2i pixel, sf::View & view, sf::RenderWindow & window, float zoom);
+
+	/*
+	Normalize
+	*/
+	float normalize(float value, float min, float max);
+
+	/*
+	Denormalise
+	*/
+	float deNormalize(float value, float min, float max);
+
+	/*
+	Get contrast color
+	*/
+	sf::Color contrastColor(sf::Color color);
+
+	/*
+	Position sf::Text centre at point
+	*/
+	void setTextPositionCentre(sf::Text & t, sf::Vector2f pos);
+
 }
 
 #endif // !GeometryDisplay_HEADER

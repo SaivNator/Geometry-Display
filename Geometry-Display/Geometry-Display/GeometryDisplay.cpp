@@ -93,10 +93,25 @@ void Window::create() {
 	update_frame = true;
 }
 
+void Window::create(sf::Vector2u win_size) {
+	window_size = win_size;
+	create();
+}
+
 void Window::windowHandler() {
 	window_mutex.lock();
-	window.create(sf::VideoMode(window_width, window_height), window_title, sf::Style::Resize | sf::Style::Resize | sf::Style::Titlebar | sf::Style::Close);
+	window.create(sf::VideoMode(window_size.x, window_size.y), window_title, sf::Style::Resize | sf::Style::Resize | sf::Style::Titlebar | sf::Style::Close);
 	screen_view = window.getView();
+	updateView();
+	world_view = sf::View(diagram_area);
+	world_view.setViewport(sf::FloatRect(
+		normalize(diagram_area.left, 0.f, (float)window_size.x),
+		normalize(diagram_area.top, 0.f, (float)window_size.y),
+		normalize(diagram_area.left + diagram_area.width, 0.f, (float)window_size.x),
+		normalize(diagram_area.top + diagram_area.height, 0.f, (float)window_size.y)
+	));
+	world_view.setCenter(world_view.getSize().x / 2, world_view.getSize().y / 2);
+
 
 	window_mutex.unlock();
 	while (running) {
@@ -109,9 +124,8 @@ void Window::windowHandler() {
 				running = false;
 				break;
 			case sf::Event::Resized:
-				window_width = e.size.width;//window.getSize().x;
-				window_height = e.size.height;//window.getSize().y;
-				screen_view = sf::View(sf::FloatRect(0.f, 0.f, static_cast<float>(window_width), static_cast<float>(window_height)));
+				window_size = { e.size.width, e.size.height };
+				screen_view = sf::View(sf::FloatRect(0.f, 0.f, static_cast<float>(window_size.x), static_cast<float>(window_size.y)));
 				update_frame = true;
 				break;
 			case sf::Event::MouseWheelScrolled:
@@ -168,7 +182,8 @@ void Window::windowHandler() {
 			window.clear(window_background_color);
 
 			window.setTitle(window_title);
-			window.setSize(sf::Vector2u(window_width, window_height));
+
+			window.setSize(window_size);
 
 			updateView();
 
@@ -207,8 +222,8 @@ void GeometryDisplay::zoomViewAtPixel(sf::Vector2i pixel, sf::View & view, sf::R
 void Window::updateView() {
 	diagram_area.left = ui_border_thickness;
 	diagram_area.top = ui_border_thickness;
-	diagram_area.width = screen_view.getSize().x - ui_border_thickness * 2;
-	diagram_area.height = screen_view.getSize().y - ui_border_thickness * 2;
+	diagram_area.width = static_cast<float>(window_size.x) - ui_border_thickness * 2;
+	diagram_area.height = static_cast<float>(window_size.y) - ui_border_thickness * 2;
 }
 
 void Window::renderUI() {
@@ -319,8 +334,7 @@ void Window::renderLines() {
 			for (std::size_t i = 0; i < draw_seg.size(); ++i) {
 				sf::Vertex v;
 				v.color = diagram_line_color;
-				v.position.x = seg[i].x;
-				v.position.y = seg[i].y;
+				v.position = sf::Vector2f(window.mapCoordsToPixel(sf::Vector2f(seg[i].x, seg[i].y), world_view));
 				diagram_vertex_array.append(v);
 			}
 		}
@@ -351,8 +365,7 @@ void Window::renderLines() {
 			for (std::size_t i = 0; i < draw_seg.size(); ++i) {
 				sf::Vertex v;
 				v.color = diagram_line_color;
-				v.position.x = seg[i].x;
-				v.position.y = seg[i].y;
+				v.position = sf::Vector2f(window.mapCoordsToPixel(sf::Vector2f(seg[i].x, seg[i].y), world_view));
 				diagram_vertex_array.append(v);
 			}
 		}
@@ -360,7 +373,7 @@ void Window::renderLines() {
 	}
 
 	//text
-	window.setView(world_view);
+	window.setView(screen_view);
 	window.draw(diagram_vertex_array);
 	window.setView(screen_view);
 	for (auto & seg : vertical_segments) {
@@ -399,6 +412,23 @@ void Window::renderDrawObject() {
 	draw_object_vec_mutex.unlock();
 	window.setView(world_view);
 	window.draw(draw_object_vertex_array);
+
+
+	//render object names
+	window.setView(screen_view);
+	draw_object_vec_mutex.lock();
+	for (auto it = draw_object_vec.begin(); it != draw_object_vec.end(); ++it) {
+		if (!(*it)->name.empty()) {
+			sf::Text t;
+			t.setFont(*text_font);
+			t.setString((*it)->name);
+			t.setCharacterSize(diagram_text_char_size);
+			t.setFillColor(contrastColor((*it)->fill_color));
+			setTextPositionCentre(t, sf::Vector2f(window.mapCoordsToPixel((*it)->getCentroid(), world_view)));
+			window.draw(t);
+		}
+	}
+	draw_object_vec_mutex.unlock();
 }
 
 void Window::setTitle(std::string title) {
@@ -416,8 +446,7 @@ void Window::setUpdateInterval(int t) {
 
 void Window::setSize(int w, int h) {
 	window_mutex.lock();
-	window_width = w;
-	window_height = h;
+	window_size = { static_cast<unsigned int>(w), static_cast<unsigned int>(h) };
 	update_frame = true;
 	window_mutex.unlock();
 }
@@ -461,6 +490,10 @@ void Window::addShape(wykobi::segment<float, 2> seg) {
 	addShape(shape);
 }
 
+sf::Vector2u Window::getWindowSize() {
+	return window_size;
+}
+
 void Window::clearShapeVec() {
 	draw_object_vec.clear();
 	update_frame = true;
@@ -483,6 +516,11 @@ PolygonShape::PolygonShape(wykobi::polygon<float, 2> poly) {
 
 PolygonShape* GeometryDisplay::PolygonShape::clone() {
 	return new PolygonShape(*this);
+}
+
+sf::Vector2f PolygonShape::getCentroid() {
+	auto centre = wykobi::centroid(polygon);
+	return { centre.x, centre.y };
 }
 
 void PolygonShape::appendVertex(sf::VertexArray & vertex_arr) {
@@ -533,6 +571,11 @@ void LineShape::appendVertex(sf::VertexArray & vertex_arr) {
 	}
 }
 
+sf::Vector2f LineShape::getCentroid() {
+	auto mid = wykobi::segment_mid_point(segment);
+	return { mid.x, mid.x };
+}
+
 std::vector<wykobi::triangle<float, 2>> GeometryDisplay::makeTriangleLine(float x0, float y0, float x1, float y1, float thickness) {
 	wykobi::segment<float, 2> segment = wykobi::make_segment(x0, y0, x1, y1);
 	float length = wykobi::distance(segment);
@@ -563,11 +606,24 @@ bool GeometryDisplay::segmentIntersectPolygon(wykobi::segment<float, 2> & seg, w
 	return false;
 }
 
-//float normalizeFloat(float value, float min, float max) {
-//	return (value - min) / (max - min);
-//}
-//float deNormalizeFloat(float value, float min, float max) {
-//	return (value * (max - min) + min);
-//}
+float GeometryDisplay::normalize(float value, float min, float max) {
+	return (value - min) / (max - min);
+}
+float GeometryDisplay::deNormalize(float value, float min, float max) {
+	return (value * (max - min) + min);
+}
+
+sf::Color GeometryDisplay::contrastColor(sf::Color color) {
+	sf::Color contrast;
+	contrast.r = color.r + 128;
+	contrast.g = color.g + 128;
+	contrast.b = color.b + 128;
+	return contrast;
+}
+
+void GeometryDisplay::setTextPositionCentre(sf::Text & t, sf::Vector2f pos) {
+	sf::FloatRect rect = t.getGlobalBounds();
+	t.setPosition({ pos.x - rect.width / 2.f, pos.y - rect.height / 2.f });
+}
 
 //end

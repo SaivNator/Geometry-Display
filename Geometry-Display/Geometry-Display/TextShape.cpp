@@ -80,6 +80,10 @@ namespace GeometryDisplay {
 
 	}
 
+	//FUCKED
+	sf::Vector2f TextShape::getCentroid() {
+		return { 0.f, 0.f };
+	}
 
 	////////////////////////////////////////////////////////////
 	void TextShape::setString(const String& string)
