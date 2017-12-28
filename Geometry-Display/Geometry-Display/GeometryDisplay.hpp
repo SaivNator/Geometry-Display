@@ -140,7 +140,7 @@ namespace GeometryDisplay {
 		std::mutex draw_object_vec_mutex;
 		std::vector<std::unique_ptr<DrawObject>> draw_object_vec;
 		sf::VertexArray draw_object_vertex_array = sf::VertexArray(sf::Triangles);
-		
+		unsigned int draw_object_text_size = 20;
 		
 		sf::VertexArray ui_vertex_array = sf::VertexArray(sf::Triangles);
 		std::vector<sf::Text> ui_text_vector;
@@ -160,17 +160,14 @@ namespace GeometryDisplay {
 		sf::Color diagram_line_color = sf::Color::Blue;
 
 		//mouse move
-		bool mouse_move = false;
+		ToggleButton mouse_move_button;
 		bool mouse_left_down = false;
 		bool mouse_left_bounce = false;
 		sf::Vector2i mouse_pos;
 		sf::Vector2f mouse_current_pos;
 		sf::Vector2f mouse_start_pos;
-		ToggleButton mouse_move_button;
 		float mouse_zoom_amount = 1.1f;
 		bool mouse_middle_down = false;
-
-		
 
 		/*
 		Window thread function
@@ -240,9 +237,19 @@ namespace GeometryDisplay {
 		void setUpdateInterval(int t);
 
 		/*
+		Set diagram size
+		*/
+		void setDiagramSize(sf::Vector2f size);
+
+		/*
+		Set diagram position
+		*/
+		void setDiagramPosition(sf::Vector2f pos);
+
+		/*
 		Set window size
 		*/
-		void setSize(int w, int h);
+		void setWindowSize(int w, int h);
 
 		/*
 		Set title
@@ -312,14 +319,24 @@ namespace GeometryDisplay {
 
 	/*
 	Get contrast color
+	Black or White
 	*/
 	sf::Color contrastColor(sf::Color color);
 
 	/*
 	Position sf::Text centre at point
 	*/
-	void setTextPositionCentre(sf::Text & t, sf::Vector2f pos);
+	void setTextPositionCentre(sf::Text & t, sf::Vector2f point);
 
+	/*
+	Position sf::View corner at point
+	corner:
+		0 = top left
+		1 = top right
+		2 = bottom right
+		4 = bottom left
+	*/
+	void setViewPositionCorner(sf::View & view, sf::Vector2f point, int corner);
 }
 
 #endif // !GeometryDisplay_HEADER

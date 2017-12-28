@@ -108,9 +108,9 @@ void Window::windowHandler() {
 	screen_view = window.getView();
 	world_view = sf::View({ 0.f, 0.f, 100.f, 100.f });
 	updateView();
-	
-	world_view.setCenter(world_view.getSize().x / 2, world_view.getSize().y / 2);
 
+	setViewPositionCorner(world_view, { 0.f, 0.f }, 0);
+	
 	window_mutex.unlock();
 	while (running) {
 		window_mutex.lock();
@@ -127,7 +127,7 @@ void Window::windowHandler() {
 				update_frame = true;
 				break;
 			case sf::Event::MouseWheelScrolled:
-				if (mouse_move) {
+				if (mouse_move_button.getState()) {
 					if (e.mouseWheelScroll.delta > 0.f) {
 						zoomViewAtPixel({ e.mouseWheelScroll.x, e.mouseWheelScroll.y }, world_view, window, 1.f / mouse_zoom_amount);
 					}
@@ -139,7 +139,7 @@ void Window::windowHandler() {
 				break;
 			case sf::Event::MouseMoved:
 				mouse_pos = { e.mouseMove.x, e.mouseMove.y };
-				if (mouse_move) {
+				if (mouse_move_button.getState()) {
 					if (mouse_left_bounce) {
 						mouse_current_pos = window.mapPixelToCoords(mouse_pos, world_view);
 						sf::Vector2f m = mouse_start_pos - mouse_current_pos;
@@ -150,12 +150,11 @@ void Window::windowHandler() {
 				break;
 			case sf::Event::MouseButtonPressed:
 				mouse_pos = { e.mouseButton.x, e.mouseButton.y };
+
 				mouse_move_button.click(mouse_pos);
 
-				mouse_move = mouse_move_button.getState();
-
 				mouse_left_down = true;
-				if (mouse_move) {
+				if (mouse_move_button.getState()) {
 					if (diagram_area.contains(static_cast<float>(mouse_pos.x), static_cast<float>(mouse_pos.y))) {
 						if (!mouse_left_bounce) {
 							mouse_start_pos = window.mapPixelToCoords(mouse_pos, world_view);
@@ -225,8 +224,8 @@ void Window::updateView() {
 	world_view.setViewport(sf::FloatRect(
 		normalize(diagram_area.left, 0.f, (float)window_size.x),
 		normalize(diagram_area.top, 0.f, (float)window_size.y),
-		normalize(diagram_area.left + diagram_area.width, 0.f, (float)window_size.x),
-		normalize(diagram_area.top + diagram_area.height, 0.f, (float)window_size.y)
+		normalize(diagram_area.width, 0.f, (float)window_size.x),
+		normalize(diagram_area.height, 0.f, (float)window_size.y)
 	));
 }
 
@@ -426,7 +425,7 @@ void Window::renderDrawObject() {
 			sf::Text t;
 			t.setFont(*text_font);
 			t.setString((*it)->name);
-			t.setCharacterSize(diagram_text_char_size);
+			t.setCharacterSize(draw_object_text_size);
 			t.setFillColor(contrastColor((*it)->fill_color));
 			setTextPositionCentre(t, sf::Vector2f(window.mapCoordsToPixel((*it)->getCentroid(), world_view)));
 			window.draw(t);
@@ -448,7 +447,7 @@ void Window::setUpdateInterval(int t) {
 	window_mutex.unlock();
 }
 
-void Window::setSize(int w, int h) {
+void Window::setWindowSize(int w, int h) {
 	window_mutex.lock();
 	window_size = { static_cast<unsigned int>(w), static_cast<unsigned int>(h) };
 	update_frame = true;
@@ -618,16 +617,36 @@ float GeometryDisplay::deNormalize(float value, float min, float max) {
 }
 
 sf::Color GeometryDisplay::contrastColor(sf::Color color) {
-	sf::Color contrast;
-	contrast.r = color.r + 128;
-	contrast.g = color.g + 128;
-	contrast.b = color.b + 128;
-	return contrast;
+	return (color.toInteger() > sf::Uint32(0xffffff) / 2) ? sf::Color::Black : sf::Color::White;
 }
 
-void GeometryDisplay::setTextPositionCentre(sf::Text & t, sf::Vector2f pos) {
+void GeometryDisplay::setTextPositionCentre(sf::Text & t, sf::Vector2f point) {
 	sf::FloatRect rect = t.getGlobalBounds();
-	t.setPosition({ pos.x - rect.width / 2.f, pos.y - rect.height / 2.f });
+	t.setPosition({ point.x - rect.width / 2.f, point.y - rect.height / 2.f });
+}
+
+void GeometryDisplay::setViewPositionCorner(sf::View & view, sf::Vector2f point, int corner) {
+	sf::Vector2f vec;
+	switch (corner) {
+	case 0:
+		vec = { view.getSize().x / 2.f, view.getSize().y / 2.f };
+		view.setCenter(point + vec);
+		break;
+	case 1:
+		vec = { -(view.getSize().x / 2.f), view.getSize().y / 2.f };
+		view.setCenter(point + vec);
+		break;
+	case 2:
+		vec = { -(view.getSize().x / 2.f), -(view.getSize().y / 2.f) };
+		view.setCenter(point + vec);
+		break;
+	case 3:
+		vec = { view.getSize().x / 2.f, -(view.getSize().y / 2.f) };
+		view.setCenter(point + vec);
+		break;
+	default:
+		break;
+	}
 }
 
 //end
