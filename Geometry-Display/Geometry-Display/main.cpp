@@ -36,8 +36,6 @@ int main() {
 	for (auto & w : win_vec) {
 		w.create();
 
-		w.setMouseMove(true);
-		w.setMouseZoom(true);
 		w.setUpdateInterval(10);
 
 		std::ostringstream title;

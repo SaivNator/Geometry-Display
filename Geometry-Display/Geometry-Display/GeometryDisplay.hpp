@@ -66,7 +66,10 @@ namespace GeometryDisplay {
 		bool toggle = false;
 		bool bounce = false;
 
+		std::shared_ptr<sf::Font> text_font;
+
 		virtual void draw(sf::RenderTarget & target, sf::RenderStates states) const;
+
 
 	public:
 		std::string not_toggle_text = "button off";
@@ -77,7 +80,20 @@ namespace GeometryDisplay {
 		sf::Color toggle_color;
 		unsigned int text_char_size = 10;
 
-		ToggleButton(sf::IntRect button_area);
+		/*
+		Set Button area
+		*/
+		void setArea(sf::IntRect button_area);
+
+		/*
+		Get Button area
+		*/
+		sf::IntRect getArea();
+
+		/*
+		Set Button font
+		*/
+		void setFont(std::shared_ptr<sf::Font> ptr);
 
 		/*
 		Check if mouse_pos is inseide area, if true then toggle
@@ -95,8 +111,6 @@ namespace GeometryDisplay {
 		true = toggeled
 		*/
 		bool getState();
-
-		void appendVertex(sf::VertexArray & vertex_arr);
 	};
 
 	class Window {
@@ -147,9 +161,7 @@ namespace GeometryDisplay {
 		sf::Vector2i mouse_pos;
 		sf::Vector2f mouse_current_pos;
 		sf::Vector2f mouse_start_pos;
-
-		//mouse zoom
-		bool mouse_zoom = false;
+		ToggleButton mouse_move_button;
 		float mouse_zoom_amount = 1.1f;
 		bool mouse_middle_down = false;
 
@@ -195,11 +207,6 @@ namespace GeometryDisplay {
 		void setMouseMove(bool v);
 
 		/*
-		Set mouse zoom
-		*/
-		void setMouseZoom(bool v);
-
-		/*
 		Set diagram rotation
 		*/
 		void rotateDiagram(float r);
@@ -213,11 +220,6 @@ namespace GeometryDisplay {
 		Set diagram position
 		*/
 		void setDiagramPosition(float x, float y);
-
-		/*
-		Zoom diagram
-		*/
-		void zoomDiagram(float scalar);
 
 		/*
 		Set update interval

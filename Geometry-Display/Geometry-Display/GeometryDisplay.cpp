@@ -4,7 +4,15 @@
 
 using namespace GeometryDisplay;
 
-ToggleButton::ToggleButton(sf::IntRect button_area) {
+sf::IntRect ToggleButton::getArea() {
+	return area;
+}
+
+void ToggleButton::setFont(std::shared_ptr<sf::Font> ptr) {
+	text_font = ptr;
+}
+
+void ToggleButton::setArea(sf::IntRect button_area) {
 	area = button_area;
 }
 
@@ -45,6 +53,7 @@ void ToggleButton::draw(sf::RenderTarget & target, sf::RenderStates states) cons
 			vertex_array.append(v);
 		}
 	}
+	text.setFont(*text_font);
 	text.setPosition((float)area.left, (float)area.top);
 	text.setCharacterSize(text_char_size);
 	if (toggle) {
@@ -59,6 +68,10 @@ void ToggleButton::draw(sf::RenderTarget & target, sf::RenderStates states) cons
 	target.draw(text, states);
 }
 
+Window::Window(std::shared_ptr<sf::Font> font_ptr) {
+	text_font = font_ptr;
+}
+
 Window::Window() { 
 	text_font = std::shared_ptr<sf::Font>(new sf::Font());
 	if (!text_font->loadFromFile("fonts/arial.ttf")) {
@@ -66,12 +79,17 @@ Window::Window() {
 	}
 }
 
-Window::Window(std::shared_ptr<sf::Font> font_ptr) {
-	text_font = font_ptr;
-}
 
 void Window::create() {
 	window_thread = std::thread(&Window::windowHandler, this);
+
+	mouse_move_button.setFont(text_font);
+	mouse_move_button.not_toggle_text = "Move\nMode";
+	mouse_move_button.toggle_text = "Move\nMode";
+	mouse_move_button.setArea(sf::IntRect(0, 0, 30, 30));
+	mouse_move_button.not_toggle_color = { 204, 204, 204 };
+	mouse_move_button.toggle_color = { 91, 105, 233 };
+
 	update_frame = true;
 }
 
@@ -97,13 +115,15 @@ void Window::windowHandler() {
 				update_frame = true;
 				break;
 			case sf::Event::MouseWheelScrolled:
-				if (e.mouseWheelScroll.delta > 0.f) {
-					zoomViewAtPixel({ e.mouseWheelScroll.x, e.mouseWheelScroll.y }, world_view, window, 1.f / mouse_zoom_amount);
+				if (mouse_move) {
+					if (e.mouseWheelScroll.delta > 0.f) {
+						zoomViewAtPixel({ e.mouseWheelScroll.x, e.mouseWheelScroll.y }, world_view, window, 1.f / mouse_zoom_amount);
+					}
+					else if (e.mouseWheelScroll.delta < 0.f) {
+						zoomViewAtPixel({ e.mouseWheelScroll.x, e.mouseWheelScroll.y }, world_view, window, mouse_zoom_amount);
+					}
+					update_frame = true;
 				}
-				else if (e.mouseWheelScroll.delta < 0.f) {
-					zoomViewAtPixel({ e.mouseWheelScroll.x, e.mouseWheelScroll.y }, world_view, window, mouse_zoom_amount);
-				}
-				update_frame = true;
 				break;
 			case sf::Event::MouseMoved:
 				mouse_pos = { e.mouseMove.x, e.mouseMove.y };
@@ -118,6 +138,10 @@ void Window::windowHandler() {
 				break;
 			case sf::Event::MouseButtonPressed:
 				mouse_pos = { e.mouseButton.x, e.mouseButton.y };
+				mouse_move_button.click(mouse_pos);
+
+				mouse_move = mouse_move_button.getState();
+
 				mouse_left_down = true;
 				if (mouse_move) {
 					if (diagram_area.contains(static_cast<float>(mouse_pos.x), static_cast<float>(mouse_pos.y))) {
@@ -132,6 +156,8 @@ void Window::windowHandler() {
 				mouse_pos = { e.mouseButton.x, e.mouseButton.y };
 				mouse_left_down = false;
 				mouse_left_bounce = false;
+				mouse_move_button.release();
+				update_frame = true;
 				break;
 			default:
 				break;
@@ -151,6 +177,8 @@ void Window::windowHandler() {
 			renderDrawObject();
 
 			renderUI();
+
+			window.draw(mouse_move_button);
 			
 			window.display();
 			update_frame = false;
@@ -160,12 +188,6 @@ void Window::windowHandler() {
 	}
 	//kill window
 	window.close();
-}
-
-void Window::setMouseZoom(bool v) {
-	window_mutex.lock();
-	mouse_zoom = v;
-	window_mutex.unlock();
 }
 
 void Window::setMouseMove(bool v) {
