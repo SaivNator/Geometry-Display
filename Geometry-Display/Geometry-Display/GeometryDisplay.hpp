@@ -73,13 +73,81 @@ namespace GeometryDisplay {
 		void positionUnder(UIPosition & parent);
 		void positionLeft(UIPosition & parent);
 		void positionRight(UIPosition & parent);
+		sf::Vector2i getSize();
+		sf::Vector2i getPosition();
+		sf::IntRect getArea();
 	};
 
-	class ToggleButton : public sf::Drawable, public UIPosition {
+	class Button : public sf::Drawable, public UIPosition {
+	protected:
+		std::shared_ptr<sf::Font> text_font;
+	public:
+		/*
+		Click
+		*/
+		virtual void click(const sf::Vector2i & mouse_pos) = 0;
+
+		/*
+		Release
+		*/
+		virtual void release() = 0;
+
+		/*
+		Get current state of button
+		*/
+		virtual bool getState() = 0;
+
+		/*
+		Set Button area
+		*/
+		void setArea(sf::IntRect button_area);
+
+		/*
+		Set Button font
+		*/
+		void setFont(std::shared_ptr<sf::Font> ptr);
+	};
+
+	class PushButton : public Button {
+	private:
+		bool is_clicked = false;
+		bool bounce = false;
+		bool force_push = false;
+		virtual void draw(sf::RenderTarget & target, sf::RenderStates states) const;
+	public:
+		std::string not_click_text = "button off";
+		std::string click_text = "button on";
+		sf::Color not_click_text_color;
+		sf::Color click_text_color;
+		sf::Color not_click_color;
+		sf::Color click_color;
+		unsigned int text_char_size = 10;
+
+		/*
+		Override button, force click
+		*/
+		void forcePush();
+
+		/*
+		
+		*/
+		void click(const sf::Vector2i & mouse_pos) override;
+
+		/*
+		Get state, will only return true once for each click
+		*/
+		bool getState() override;
+
+		/*
+		
+		*/
+		void release() override;
+	};
+
+	class ToggleButton : public Button {
 	private:
 		bool toggle = false;
 		bool bounce = false;
-		std::shared_ptr<sf::Font> text_font;
 		virtual void draw(sf::RenderTarget & target, sf::RenderStates states) const;
 	public:
 		std::string not_toggle_text = "button off";
@@ -96,36 +164,21 @@ namespace GeometryDisplay {
 		void setToggle(bool v);
 
 		/*
-		Set Button area
+		Check if mouse_pos is inside area, if true then toggle
 		*/
-		void setArea(sf::IntRect button_area);
-
-		/*
-		Get Button area
-		*/
-		sf::IntRect getArea();
-
-		/*
-		Set Button font
-		*/
-		void setFont(std::shared_ptr<sf::Font> ptr);
-
-		/*
-		Check if mouse_pos is inseide area, if true then toggle
-		*/
-		void click(const sf::Vector2i mouse_pos);
+		void click(const sf::Vector2i & mouse_pos) override;
 
 		/*
 		Reset bounce of button
 		*/
-		void release();
+		void release() override;
 
 		/*
 		Get button state
 		false = not toggeled
 		true = toggeled
 		*/
-		bool getState();
+		bool getState() override;
 	};
 
 	class Window {
@@ -136,7 +189,7 @@ namespace GeometryDisplay {
 
 		std::shared_ptr<sf::Font> text_font;
 
-		int update_interval = 50;				//in ms
+		int update_interval = 16;				//in ms
 		sf::Vector2u window_size = { 500, 500 };
 		bool update_frame = false;
 		bool running = true;
@@ -151,6 +204,10 @@ namespace GeometryDisplay {
 		sf::VertexArray draw_object_vertex_array = sf::VertexArray(sf::Triangles);
 		unsigned int draw_object_text_size = 20;
 		ToggleButton show_draw_object_button;
+
+		//lock world view scale (x and y has same scale)
+		ToggleButton lock_world_view_scale_button;
+		PushButton auto_size_button;
 		
 		sf::VertexArray ui_vertex_array = sf::VertexArray(sf::Triangles);
 		std::vector<sf::Text> ui_text_vector;
@@ -219,6 +276,11 @@ namespace GeometryDisplay {
 		Based on shapes in window
 		*/
 		void autoSize();
+
+		/*
+		Set lock screen scale
+		*/
+		void setLockScreenScale(bool b);
 
 		/*
 		Set mouse move

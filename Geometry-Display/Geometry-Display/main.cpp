@@ -23,46 +23,37 @@ int main() {
 		return EXIT_FAILURE;
 	}
 
+	GeometryDisplay::Window w;
+	
+	w.create({ 1000, 600 });
+	w.setMouseMove(true);
+
 	GeometryDisplay::LineShape line(wykobi::make_segment<float>(10, 10, 300, 400));
-
-	std::vector<GeometryDisplay::PolygonShape> poly_vec;
-
-	poly_vec.push_back(GeometryDisplay::PolygonShape(wykobi::make_polygon(wykobi::make_circle(100.f, 100.f, 50.f), 100)));
-
 	line.thickness = 10.f;
-	std::vector<GeometryDisplay::Window> win_vec(1);
-	std::size_t i = 0;
-	for (auto & w : win_vec) {
-		w.create({ 1000, 600 });
-		w.setMouseMove(true);
-		w.setUpdateInterval(10);
+	w.addShape(line);
 
-		std::ostringstream title;
-		title << "Window ";
-		title << i;
-		w.setTitle(title.str());
-		w.addShape(line);
+	GeometryDisplay::PolygonShape p1(wykobi::make_polygon(wykobi::make_circle(100.f, 100.f, 50.f), 100));
+	p1.name = "P1";
+	p1.inner_fill = true;
+	p1.outer_line = true;
+	p1.fill_color = sf::Color::Green;
+	p1.line_color = sf::Color::Cyan;
 
-		for (GeometryDisplay::DrawObject & o : poly_vec) {
+	GeometryDisplay::PolygonShape p2(wykobi::make_polygon(wykobi::make_circle(100.f, -500.f, 50.f), 100));
+	p2.name = "P2";
+	p2.inner_fill = true;
+	p2.outer_line = true;
+	p2.fill_color = sf::Color::Green;
+	p2.line_color = sf::Color::Cyan;
 
-			o.name = "POLYGONJAJAJA";
+	w.addShape(p1);
+	w.addShape(p2);
 
-			o.inner_fill = true;
-			o.outer_line = true;
-			o.fill_color = sf::Color::Green;
-			o.line_color = sf::Color::Cyan;
-			w.addShape(o);
-		}
-
-		w.autoSize();
-
-		++i;
-	}
+	w.autoSize();
 
 
-	for (auto & w : win_vec) {
-		w.join();
-	}
+	w.join();
+	
 
 	return EXIT_SUCCESS;
 }

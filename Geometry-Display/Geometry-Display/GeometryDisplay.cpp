@@ -4,6 +4,8 @@
 
 using namespace GeometryDisplay;
 
+
+
 void UIPosition::positionOver(UIPosition & parent) {
 	this->area.left = parent.area.left;
 	this->area.top = parent.area.top - this->area.height;
@@ -20,20 +22,93 @@ void UIPosition::positionRight(UIPosition & parent) {
 	this->area.left = parent.area.left + parent.area.width;
 	this->area.top = parent.area.top;
 }
+sf::Vector2i UIPosition::getSize() {
+	return { area.width, area.height };
+}
 
-sf::IntRect ToggleButton::getArea() {
+sf::IntRect UIPosition::getArea() {
 	return area;
 }
 
-void ToggleButton::setFont(std::shared_ptr<sf::Font> ptr) {
+sf::Vector2i UIPosition::getPosition() {
+	return { area.left, area.top };
+}
+
+void Button::setFont(std::shared_ptr<sf::Font> ptr) {
 	text_font = ptr;
 }
 
-void ToggleButton::setArea(sf::IntRect button_area) {
+void Button::setArea(sf::IntRect button_area) {
 	area = button_area;
 }
 
-void ToggleButton::click(const sf::Vector2i mouse_pos) {
+void PushButton::forcePush() {
+	force_push = true;
+}
+
+void PushButton::click(const sf::Vector2i & mouse_pos) {
+	if (!bounce) {
+		if (area.contains(mouse_pos)) {
+			is_clicked = true;
+		}
+	}
+}
+
+bool PushButton::getState() {
+	if (force_push) {
+		force_push = false;
+		return true;
+	}
+	else if (is_clicked && !bounce) {
+		bounce = true;
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+void PushButton::release() {
+	is_clicked = false;
+	bounce = false;
+}
+
+void PushButton::draw(sf::RenderTarget & target, sf::RenderStates states) const {
+	sf::VertexArray vertex_array(sf::Triangles);
+	sf::Text text;
+	wykobi::rectangle<float> rect = wykobi::make_rectangle((float)area.left, (float)area.top, (float)area.left + (float)area.width, (float)area.top + (float)area.height);
+	std::vector<wykobi::triangle<float, 2>> triangle_vec;
+	wykobi::algorithm::polygon_triangulate<wykobi::point2d<float>>(wykobi::make_polygon(rect), std::back_inserter(triangle_vec));
+	for (wykobi::triangle<float, 2> & tri : triangle_vec) {
+		for (std::size_t i = 0; i < tri.size(); ++i) {
+			sf::Vertex v;
+			v.position.x = tri[i].x;
+			v.position.y = tri[i].y;
+			if (is_clicked) {
+				v.color = click_color;
+			}
+			else {
+				v.color = not_click_color;
+			}
+			vertex_array.append(v);
+		}
+	}
+	text.setFont(*text_font);
+	text.setPosition((float)area.left, (float)area.top);
+	text.setCharacterSize(text_char_size);
+	if (is_clicked) {
+		text.setString(click_text);
+		text.setFillColor(click_text_color);
+	}
+	else {
+		text.setString(not_click_text);
+		text.setFillColor(not_click_text_color);
+	}
+	target.draw(vertex_array, states);
+	target.draw(text, states);
+}
+
+void ToggleButton::click(const sf::Vector2i & mouse_pos) {
 	if (!bounce) {
 		if (area.contains(mouse_pos)) {
 			toggle = !toggle;
@@ -112,14 +187,32 @@ void Window::create() {
 	mouse_move_button.not_toggle_color = { 204, 204, 204 };
 	mouse_move_button.toggle_color = { 91, 105, 233 };
 
-	//init shaoe text button
+	//init show shape text button
 	show_draw_object_button.setFont(text_font);
 	show_draw_object_button.not_toggle_text = "Show\nName";
-	show_draw_object_button.toggle_text = "Show\nName";
+	show_draw_object_button.toggle_text = "Hide\nName";
 	show_draw_object_button.setArea(sf::IntRect(0, 0, 30, 30));
 	show_draw_object_button.positionRight(mouse_move_button);
 	show_draw_object_button.not_toggle_color = { 204, 204, 204 };
 	show_draw_object_button.toggle_color = { 91, 105, 233 };
+
+	//init lock button
+	lock_world_view_scale_button.setFont(text_font);
+	lock_world_view_scale_button.not_toggle_text = "Lock\nScale";
+	lock_world_view_scale_button.toggle_text = "Free\nScale";
+	lock_world_view_scale_button.setArea(sf::IntRect(0, 0, 30, 30));
+	lock_world_view_scale_button.positionRight(show_draw_object_button);
+	lock_world_view_scale_button.not_toggle_color = { 204, 204, 204 };
+	lock_world_view_scale_button.toggle_color = { 91, 105, 233 };
+
+	//init auto size button
+	auto_size_button.setFont(text_font);
+	auto_size_button.not_click_text = "Auto\nSize";
+	auto_size_button.click_text = "Auto\nSize";
+	auto_size_button.setArea(sf::IntRect(0, 0, 30, 30));
+	auto_size_button.positionRight(lock_world_view_scale_button);
+	auto_size_button.not_click_color = { 204, 204, 204 };
+	auto_size_button.click_color = { 91, 105, 233 };
 
 	update_frame = true;
 }
@@ -135,9 +228,7 @@ void Window::windowHandler() {
 	screen_view = window.getView();
 	world_view = sf::View({ 0.f, 0.f, 100.f, 100.f });
 	updateView();
-
 	setViewPositionCorner(world_view, { 0.f, 0.f }, 0);
-	
 	
 	window_mutex.unlock();
 	while (running) {
@@ -181,6 +272,8 @@ void Window::windowHandler() {
 
 				mouse_move_button.click(mouse_pos);
 				show_draw_object_button.click(mouse_pos);
+				lock_world_view_scale_button.click(mouse_pos);
+				auto_size_button.click(mouse_pos);
 
 				mouse_left_down = true;
 				if (mouse_move_button.getState()) {
@@ -198,11 +291,18 @@ void Window::windowHandler() {
 				mouse_left_bounce = false;
 				mouse_move_button.release();
 				show_draw_object_button.release();
+				lock_world_view_scale_button.release();
+				auto_size_button.release();
 				update_frame = true;
 				break;
 			default:
 				break;
 			}
+		}
+
+		//button functions
+		if (auto_size_button.getState()) {
+			autoSize();
 		}
 
 		if (update_frame) {
@@ -222,6 +322,8 @@ void Window::windowHandler() {
 
 			window.draw(mouse_move_button);
 			window.draw(show_draw_object_button);
+			window.draw(lock_world_view_scale_button);
+			window.draw(auto_size_button);
 			
 			window.display();
 			update_frame = false;
@@ -298,19 +400,17 @@ void Window::autoSize() {
 		outer_rect = draw_object_vec.front()->getBoundingRectangle();
 		for (auto it = draw_object_vec.begin() + 1; it != draw_object_vec.end(); ++it) {
 			wykobi::rectangle<float> inner_rect = (*it)->getBoundingRectangle();
-			for (std::size_t i = 1; i < inner_rect.size(); ++i) {
-				if (inner_rect[i].x < outer_rect[0].x) {
-					outer_rect[0].x = inner_rect[i].x;
-				}
-				if (inner_rect[i].y < outer_rect[0].y) {
-					outer_rect[0].y = inner_rect[i].y;
-				}
-				if (inner_rect[i].x > outer_rect[1].x) {
-					outer_rect[1].x = inner_rect[i].x;
-				}
-				if (inner_rect[i].y > outer_rect[1].y) {
-					outer_rect[1].y = inner_rect[i].y;
-				}
+			if (inner_rect[0].x < outer_rect[0].x) {
+				outer_rect[0].x = inner_rect[0].x;
+			}
+			if (inner_rect[0].y < outer_rect[0].y) {
+				outer_rect[0].y = inner_rect[0].y;
+			}
+			if (inner_rect[1].x > outer_rect[1].x) {
+				outer_rect[1].x = inner_rect[1].x;
+			}
+			if (inner_rect[1].y > outer_rect[1].y) {
+				outer_rect[1].y = inner_rect[1].y;
 			}
 		}
 
