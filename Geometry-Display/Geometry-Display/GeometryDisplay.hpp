@@ -34,6 +34,7 @@ namespace GeometryDisplay {
 		bool inner_fill = true;
 		float outer_line_thickness = 2.f;
 		virtual sf::Vector2f getCentroid() = 0;
+		virtual wykobi::rectangle<float> getBoundingRectangle() = 0;
 		virtual void appendVertex(sf::VertexArray & vertex_arr) = 0;
 		virtual DrawObject* clone() = 0;
 	};
@@ -49,7 +50,8 @@ namespace GeometryDisplay {
 		wykobi::polygon<float, 2> polygon;
 		PolygonShape(wykobi::polygon<float, 2> poly);
 		PolygonShape* clone() override;
-		virtual sf::Vector2f getCentroid() override;
+		sf::Vector2f getCentroid() override;
+		wykobi::rectangle<float> getBoundingRectangle() override;
 		void appendVertex(sf::VertexArray & vertex_arr) override;
 	};
 	class LineShape : public DrawObject {
@@ -58,7 +60,8 @@ namespace GeometryDisplay {
 		float thickness = 1.f;
 		LineShape(wykobi::segment<float, 2> seg);
 		LineShape* clone() override;
-		virtual sf::Vector2f getCentroid() override;
+		sf::Vector2f getCentroid() override;
+		wykobi::rectangle<float> getBoundingRectangle() override;
 		void appendVertex(sf::VertexArray & vertex_arr) override;
 	};
 
@@ -76,9 +79,7 @@ namespace GeometryDisplay {
 	private:
 		bool toggle = false;
 		bool bounce = false;
-
 		std::shared_ptr<sf::Font> text_font;
-
 		virtual void draw(sf::RenderTarget & target, sf::RenderStates states) const;
 	public:
 		std::string not_toggle_text = "button off";
@@ -223,11 +224,6 @@ namespace GeometryDisplay {
 		Set mouse move
 		*/
 		void setMouseMove(bool v);
-
-		/*
-		Set diagram rotation
-		*/
-		void rotateDiagram(float r);
 
 		/*
 		Set diagram resolution

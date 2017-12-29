@@ -33,7 +33,7 @@ int main() {
 	std::vector<GeometryDisplay::Window> win_vec(1);
 	std::size_t i = 0;
 	for (auto & w : win_vec) {
-		w.create();
+		w.create({ 1000, 600 });
 		w.setMouseMove(true);
 		w.setUpdateInterval(10);
 
@@ -53,6 +53,8 @@ int main() {
 			o.line_color = sf::Color::Cyan;
 			w.addShape(o);
 		}
+
+		w.autoSize();
 
 		++i;
 	}

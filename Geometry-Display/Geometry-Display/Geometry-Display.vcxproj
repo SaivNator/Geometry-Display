@@ -121,14 +121,12 @@
   <ItemGroup>
     <ClCompile Include="FileDialog.cpp" />
     <ClCompile Include="StandardCursor.cpp" />
-    <ClCompile Include="TextShape.cpp" />
     <ClCompile Include="GeometryDisplay.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FileDialog.hpp" />
     <ClInclude Include="StandardCursor.hpp" />
-    <ClInclude Include="TextShape.hpp" />
     <ClInclude Include="GeometryDisplay.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

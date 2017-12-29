@@ -138,6 +138,7 @@ void Window::windowHandler() {
 
 	setViewPositionCorner(world_view, { 0.f, 0.f }, 0);
 	
+	
 	window_mutex.unlock();
 	while (running) {
 		window_mutex.lock();
@@ -288,6 +289,38 @@ void Window::renderUI() {
 	}
 	window.setView(screen_view);
 	window.draw(ui_vertex_array);
+}
+
+void Window::autoSize() {
+	draw_object_vec_mutex.lock();
+	if (!draw_object_vec.empty()) {
+		wykobi::rectangle<float> outer_rect;
+		outer_rect = draw_object_vec.front()->getBoundingRectangle();
+		for (auto it = draw_object_vec.begin() + 1; it != draw_object_vec.end(); ++it) {
+			wykobi::rectangle<float> inner_rect = (*it)->getBoundingRectangle();
+			for (std::size_t i = 1; i < inner_rect.size(); ++i) {
+				if (inner_rect[i].x < outer_rect[0].x) {
+					outer_rect[0].x = inner_rect[i].x;
+				}
+				if (inner_rect[i].y < outer_rect[0].y) {
+					outer_rect[0].y = inner_rect[i].y;
+				}
+				if (inner_rect[i].x > outer_rect[1].x) {
+					outer_rect[1].x = inner_rect[i].x;
+				}
+				if (inner_rect[i].y > outer_rect[1].y) {
+					outer_rect[1].y = inner_rect[i].y;
+				}
+			}
+		}
+
+		wykobi::point2d<float> centre = wykobi::centroid(outer_rect);
+		wykobi::vector2d<float> size = outer_rect[1] - outer_rect[0];
+		world_view.setCenter({ centre.x, centre.y });
+		world_view.setSize( {size.x, size.y} );
+
+	}
+	draw_object_vec_mutex.unlock();
 }
 
 float GeometryDisplay::getClosestPointInRes(float v, float res) {
@@ -492,13 +525,6 @@ void Window::setDiagramPosition(float x, float y) {
 	window_mutex.unlock();
 }
 
-void Window::rotateDiagram(float r) {
-	window_mutex.lock();
-	world_view.rotate(r);
-	update_frame = true;
-	window_mutex.unlock();
-}
-
 void Window::setDiagramLineResolution(float x, float y) {
 	window_mutex.lock();
 	diagram_line_resolution.x = x;
@@ -557,6 +583,10 @@ sf::Vector2f PolygonShape::getCentroid() {
 	return { centre.x, centre.y };
 }
 
+wykobi::rectangle<float> PolygonShape::getBoundingRectangle() {
+	return GeometryDisplay::getBoundingRectangle(polygon);
+}
+
 void PolygonShape::appendVertex(sf::VertexArray & vertex_arr) {
 	if (inner_fill) {
 		std::vector<wykobi::triangle<float, 2>> triangle_vec;
@@ -608,6 +638,10 @@ void LineShape::appendVertex(sf::VertexArray & vertex_arr) {
 sf::Vector2f LineShape::getCentroid() {
 	auto mid = wykobi::segment_mid_point(segment);
 	return { mid.x, mid.x };
+}
+
+wykobi::rectangle<float> LineShape::getBoundingRectangle() {
+	return wykobi::make_rectangle(segment[0], segment[1]);
 }
 
 std::vector<wykobi::triangle<float, 2>> GeometryDisplay::makeTriangleLine(float x0, float y0, float x1, float y1, float thickness) {
