@@ -261,6 +261,12 @@ namespace GeometryDisplay {
 		Must be called from window_thread
 		*/
 		void renderDrawObject();
+
+		/*
+		Auto size diagram
+		Based on shapes in window
+		*/
+		void autoSize();
 		
 	public:
 		Window();
@@ -270,12 +276,6 @@ namespace GeometryDisplay {
 		void addShape(wykobi::polygon<float, 2> poly);
 		void addShape(wykobi::segment<float, 2> seg);
 		void clearShapeVec();
-
-		/*
-		Auto size diagram
-		Based on shapes in window
-		*/
-		void autoSize();
 
 		/*
 		Set lock screen scale

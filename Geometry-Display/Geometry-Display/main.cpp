@@ -49,9 +49,6 @@ int main() {
 	w.addShape(p1);
 	w.addShape(p2);
 
-	w.autoSize();
-
-
 	w.join();
 	
 

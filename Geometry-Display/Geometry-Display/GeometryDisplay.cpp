@@ -229,7 +229,7 @@ void Window::windowHandler() {
 	world_view = sf::View({ 0.f, 0.f, 100.f, 100.f });
 	updateView();
 	setViewPositionCorner(world_view, { 0.f, 0.f }, 0);
-	
+
 	window_mutex.unlock();
 	while (running) {
 		window_mutex.lock();
@@ -284,6 +284,9 @@ void Window::windowHandler() {
 						}
 					}
 				}
+				if (auto_size_button.getState()) {
+					autoSize();
+				}
 				break;
 			case sf::Event::MouseButtonReleased:
 				mouse_pos = { e.mouseButton.x, e.mouseButton.y };
@@ -298,11 +301,6 @@ void Window::windowHandler() {
 			default:
 				break;
 			}
-		}
-
-		//button functions
-		if (auto_size_button.getState()) {
-			autoSize();
 		}
 
 		if (update_frame) {
@@ -413,9 +411,22 @@ void Window::autoSize() {
 				outer_rect[1].y = inner_rect[1].y;
 			}
 		}
-
 		wykobi::point2d<float> centre = wykobi::centroid(outer_rect);
-		wykobi::vector2d<float> size = outer_rect[1] - outer_rect[0];
+		wykobi::vector2d<float> size;
+		if (!lock_world_view_scale_button.getState()) {
+			size = outer_rect[1] - outer_rect[0];
+		}
+		else {
+			size = outer_rect[1] - outer_rect[0];
+			if (size.x > size.y) {
+				float ratio = diagram_area.height / diagram_area.width;
+				size.y = size.x * world_view.getViewport().height;
+			}
+			else {
+				float ratio = diagram_area.width / diagram_area.height;
+				size.x = size.y * ratio;
+			}
+		}
 		world_view.setCenter({ centre.x, centre.y });
 		world_view.setSize( {size.x, size.y} );
 
