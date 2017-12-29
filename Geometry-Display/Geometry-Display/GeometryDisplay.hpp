@@ -25,7 +25,6 @@
 #include "StandardCursor.hpp"
 
 namespace GeometryDisplay {
-	
 	class DrawObject {
 	public:
 		std::string name;
@@ -63,9 +62,18 @@ namespace GeometryDisplay {
 		void appendVertex(sf::VertexArray & vertex_arr) override;
 	};
 
-	class ToggleButton : public sf::Drawable {
-	private:
+	class UIPosition {
+	protected:
 		sf::IntRect area;
+	public:
+		void positionOver(UIPosition & parent);
+		void positionUnder(UIPosition & parent);
+		void positionLeft(UIPosition & parent);
+		void positionRight(UIPosition & parent);
+	};
+
+	class ToggleButton : public sf::Drawable, public UIPosition {
+	private:
 		bool toggle = false;
 		bool bounce = false;
 
@@ -141,6 +149,7 @@ namespace GeometryDisplay {
 		std::vector<std::unique_ptr<DrawObject>> draw_object_vec;
 		sf::VertexArray draw_object_vertex_array = sf::VertexArray(sf::Triangles);
 		unsigned int draw_object_text_size = 20;
+		ToggleButton show_draw_object_button;
 		
 		sf::VertexArray ui_vertex_array = sf::VertexArray(sf::Triangles);
 		std::vector<sf::Text> ui_text_vector;

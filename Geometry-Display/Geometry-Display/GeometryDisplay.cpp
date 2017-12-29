@@ -4,6 +4,23 @@
 
 using namespace GeometryDisplay;
 
+void UIPosition::positionOver(UIPosition & parent) {
+	this->area.left = parent.area.left;
+	this->area.top = parent.area.top - this->area.height;
+}
+void UIPosition::positionUnder(UIPosition & parent) {
+	this->area.left = parent.area.left;
+	this->area.top = parent.area.top + parent.area.height;
+}
+void UIPosition::positionLeft(UIPosition & parent) {
+	this->area.left = parent.area.left - this->area.width;
+	this->area.top = parent.area.top;
+}
+void UIPosition::positionRight(UIPosition & parent) {
+	this->area.left = parent.area.left + parent.area.width;
+	this->area.top = parent.area.top;
+}
+
 sf::IntRect ToggleButton::getArea() {
 	return area;
 }
@@ -87,12 +104,22 @@ Window::Window() {
 void Window::create() {
 	window_thread = std::thread(&Window::windowHandler, this);
 
+	//init move button
 	mouse_move_button.setFont(text_font);
 	mouse_move_button.not_toggle_text = "Move\nMode";
 	mouse_move_button.toggle_text = "Move\nMode";
 	mouse_move_button.setArea(sf::IntRect(0, 0, 30, 30));
 	mouse_move_button.not_toggle_color = { 204, 204, 204 };
 	mouse_move_button.toggle_color = { 91, 105, 233 };
+
+	//init shaoe text button
+	show_draw_object_button.setFont(text_font);
+	show_draw_object_button.not_toggle_text = "Show\nName";
+	show_draw_object_button.toggle_text = "Show\nName";
+	show_draw_object_button.setArea(sf::IntRect(0, 0, 30, 30));
+	show_draw_object_button.positionRight(mouse_move_button);
+	show_draw_object_button.not_toggle_color = { 204, 204, 204 };
+	show_draw_object_button.toggle_color = { 91, 105, 233 };
 
 	update_frame = true;
 }
@@ -152,6 +179,7 @@ void Window::windowHandler() {
 				mouse_pos = { e.mouseButton.x, e.mouseButton.y };
 
 				mouse_move_button.click(mouse_pos);
+				show_draw_object_button.click(mouse_pos);
 
 				mouse_left_down = true;
 				if (mouse_move_button.getState()) {
@@ -168,6 +196,7 @@ void Window::windowHandler() {
 				mouse_left_down = false;
 				mouse_left_bounce = false;
 				mouse_move_button.release();
+				show_draw_object_button.release();
 				update_frame = true;
 				break;
 			default:
@@ -191,6 +220,7 @@ void Window::windowHandler() {
 			renderUI();
 
 			window.draw(mouse_move_button);
+			window.draw(show_draw_object_button);
 			
 			window.display();
 			update_frame = false;
@@ -416,22 +446,23 @@ void Window::renderDrawObject() {
 	window.setView(world_view);
 	window.draw(draw_object_vertex_array);
 
-
-	//render object names
-	window.setView(screen_view);
-	draw_object_vec_mutex.lock();
-	for (auto it = draw_object_vec.begin(); it != draw_object_vec.end(); ++it) {
-		if (!(*it)->name.empty()) {
-			sf::Text t;
-			t.setFont(*text_font);
-			t.setString((*it)->name);
-			t.setCharacterSize(draw_object_text_size);
-			t.setFillColor(contrastColor((*it)->fill_color));
-			setTextPositionCentre(t, sf::Vector2f(window.mapCoordsToPixel((*it)->getCentroid(), world_view)));
-			window.draw(t);
+	if (show_draw_object_button.getState()) {
+		//render object names
+		window.setView(screen_view);
+		draw_object_vec_mutex.lock();
+		for (auto it = draw_object_vec.begin(); it != draw_object_vec.end(); ++it) {
+			if (!(*it)->name.empty()) {
+				sf::Text t;
+				t.setFont(*text_font);
+				t.setString((*it)->name);
+				t.setCharacterSize(draw_object_text_size);
+				t.setFillColor(contrastColor((*it)->fill_color));
+				setTextPositionCentre(t, sf::Vector2f(window.mapCoordsToPixel((*it)->getCentroid(), world_view)));
+				window.draw(t);
+			}
 		}
+		draw_object_vec_mutex.unlock();
 	}
-	draw_object_vec_mutex.unlock();
 }
 
 void Window::setTitle(std::string title) {
