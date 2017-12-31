@@ -35,10 +35,12 @@ namespace GeometryDisplay {
 		bool outer_line = false;
 		bool inner_fill = true;
 		float outer_line_thickness = 2.f;
+
 		virtual sf::Vector2f getCentroid() = 0;
 		virtual wykobi::rectangle<float> getBoundingRectangle() = 0;
-		virtual void appendVertex(sf::VertexArray & vertex_arr) = 0;
 		virtual DrawObject* clone() = 0;
+		virtual void appendVertex(sf::VertexArray & vertex_arr) = 0;
+		virtual std::string toString();
 	};
 	class TriangleShape : public DrawObject {
 	public:
@@ -55,6 +57,7 @@ namespace GeometryDisplay {
 		sf::Vector2f getCentroid() override;
 		wykobi::rectangle<float> getBoundingRectangle() override;
 		void appendVertex(sf::VertexArray & vertex_arr) override;
+		std::string toString() override;
 	};
 	class LineShape : public DrawObject {
 	public:
@@ -65,6 +68,7 @@ namespace GeometryDisplay {
 		sf::Vector2f getCentroid() override;
 		wykobi::rectangle<float> getBoundingRectangle() override;
 		void appendVertex(sf::VertexArray & vertex_arr) override;
+		std::string toString() override;
 	};
 
 	class UIPosition {

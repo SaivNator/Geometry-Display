@@ -480,6 +480,20 @@ void Window::saveShapeToFile() {
 	}
 }
 void Window::saveShapeToFile(std::string path) {
+	
+	draw_object_vec_mutex.lock();
+	//make array to write
+	std::ofstream file;
+	file.open(path);
+
+	for (auto it = draw_object_vec.begin(); it != draw_object_vec.end(); ++it) {
+		file << (*it)->toString();
+	}
+
+	draw_object_vec_mutex.unlock();
+
+	file.flush();
+	file.close();
 }
 
 float GeometryDisplay::getClosestPointInRes(float v, float res) {
@@ -775,6 +789,33 @@ void PolygonShape::appendVertex(sf::VertexArray & vertex_arr) {
 		}
 	}
 }
+
+std::string DrawObject::toString() {
+	std::ostringstream stream;
+	stream << "name=\"" << name << "\"" << " ";
+	stream << "outer_line=" << outer_line << " ";
+	stream << "inner_fill=" << inner_fill << " ";
+	stream << "fill_color=" << std::hex << fill_color.toInteger() << " ";
+	stream << "fill_color_alpha=" << std::hex << fill_color.a << " ";
+	stream << "line_color=" << std::hex << line_color.toInteger() << " ";
+	stream << "line_color_alpha=" << std::hex << line_color.a << " ";
+	stream << "outer_line_thickness=" << outer_line_thickness << " ";
+	return stream.str();
+}
+
+std::string PolygonShape::toString() {
+	std::ostringstream stream;
+	stream << "type=" << "line" << " ";
+	stream << DrawObject::toString();
+	stream << "polygon={";
+	for (std::size_t i = 0; i < polygon.size(); ++i) {
+		stream << "(" << polygon[i].x << "," << polygon[i].y << ")";
+	}
+	stream << "}";
+	stream << "\n";
+	return stream.str();
+}
+
 LineShape::LineShape(wykobi::segment<float, 2> seg) {
 	segment = seg;
 }
@@ -794,6 +835,20 @@ void LineShape::appendVertex(sf::VertexArray & vertex_arr) {
 			}
 		}
 	}
+}
+
+std::string LineShape::toString() {
+	std::ostringstream stream;
+	stream << "type=" << "line" << " ";
+	stream << DrawObject::toString();
+	stream << "thickness=" << thickness << " ";
+	stream << "segment={";
+	for (std::size_t i = 0; i < segment.size(); ++i) {
+		stream << "(" << segment[i].x << "," << segment[i].y << ")";
+	}
+	stream << "}";
+	stream << "\n";
+	return stream.str();
 }
 
 sf::Vector2f LineShape::getCentroid() {
