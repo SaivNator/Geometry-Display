@@ -223,8 +223,9 @@ namespace GeometryDisplay {
 		sf::View world_view;	
 		sf::FloatRect diagram_area;
 		wykobi::vector2d<float> diagram_line_resolution = wykobi::make_vector<float>(50.f, 50.f);
+		sf::Vector2i line_screen_distance = { 50, 50 };
 		float diagram_line_thickness = 2.f;
-		sf::Color diagram_line_color = sf::Color::Blue;
+		sf::Color diagram_line_color = { 0, 0, 255, 255 / 2 };
 
 		//mouse move
 		ToggleButton mouse_move_button;
@@ -267,6 +268,11 @@ namespace GeometryDisplay {
 		Based on shapes in window
 		*/
 		void autoSize();
+
+		/*
+		Auto line resolution
+		*/
+		//void autoLineResolution();
 		
 	public:
 		Window();
@@ -404,6 +410,11 @@ namespace GeometryDisplay {
 		4 = bottom left
 	*/
 	void setViewPositionCorner(sf::View & view, sf::Vector2f point, int corner);
+
+	/*
+	Compute resolution for lines accoring to target????
+	*/
+	float computeLineResolution(float low, float high, int target);
 }
 
 #endif // !GeometryDisplay_HEADER

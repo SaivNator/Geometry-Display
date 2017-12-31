@@ -269,12 +269,10 @@ void Window::windowHandler() {
 				break;
 			case sf::Event::MouseButtonPressed:
 				mouse_pos = { e.mouseButton.x, e.mouseButton.y };
-
 				mouse_move_button.click(mouse_pos);
 				show_draw_object_button.click(mouse_pos);
 				lock_world_view_scale_button.click(mouse_pos);
 				auto_size_button.click(mouse_pos);
-
 				mouse_left_down = true;
 				if (mouse_move_button.getState()) {
 					if (diagram_area.contains(static_cast<float>(mouse_pos.x), static_cast<float>(mouse_pos.y))) {
@@ -312,12 +310,14 @@ void Window::windowHandler() {
 
 			updateView();
 
+			renderUI();
+
 			renderLines();
 			
 			renderDrawObject();
 
-			renderUI();
 
+			window.setView(screen_view);
 			window.draw(mouse_move_button);
 			window.draw(show_draw_object_button);
 			window.draw(lock_world_view_scale_button);
@@ -336,6 +336,12 @@ void Window::windowHandler() {
 void Window::setMouseMove(bool v) {
 	window_mutex.lock();
 	mouse_move_button.setToggle(v);
+	window_mutex.unlock();
+}
+
+void Window::setLockScreenScale(bool v) {
+	window_mutex.lock();
+	lock_world_view_scale_button.setToggle(v);
 	window_mutex.unlock();
 }
 
@@ -358,6 +364,7 @@ void Window::updateView() {
 		normalize(diagram_area.width, 0.f, (float)window_size.x),
 		normalize(diagram_area.height, 0.f, (float)window_size.y)
 	));
+	//autoLineResolution();
 }
 
 void Window::renderUI() {
@@ -390,6 +397,14 @@ void Window::renderUI() {
 	window.setView(screen_view);
 	window.draw(ui_vertex_array);
 }
+
+//void Window::autoLineResolution() {
+//	sf::Vector2f v0 = window.mapPixelToCoords({ 0, 0 }, world_view);
+//	sf::Vector2f v1 = window.mapPixelToCoords(line_screen_distance, world_view);
+//	sf::Vector2f v_dist = v1 - v0;
+//	diagram_line_resolution.x = v_dist.x;//std::round(v_dist.x);
+//	diagram_line_resolution.y = v_dist.y;// std::round(v_dist.y);
+//}
 
 void Window::autoSize() {
 	draw_object_vec_mutex.lock();
@@ -558,6 +573,7 @@ void Window::renderLines() {
 		sf::Text t;
 		t.setFillColor(diagram_text_color);
 		t.setPosition(sf::Vector2f(window.mapCoordsToPixel(sf::Vector2f(seg[index].x, seg[index].y), world_view)));
+		t.setPosition({ t.getPosition().x, t.getPosition().y - 20 });	 //HACK
 		std::ostringstream s;
 		s << seg[index].x;
 		t.setFont(*text_font);
@@ -570,6 +586,7 @@ void Window::renderLines() {
 		sf::Text t;
 		t.setFillColor(diagram_text_color);
 		t.setPosition(sf::Vector2f(window.mapCoordsToPixel(sf::Vector2f(seg[index].x, seg[index].y), world_view)));
+		t.setPosition({ t.getPosition().x - 20, t.getPosition().y });	//HACK
 		std::ostringstream s;
 		s << seg[index].y;
 		t.setFont(*text_font);
