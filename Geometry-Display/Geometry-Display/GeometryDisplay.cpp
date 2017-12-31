@@ -175,7 +175,6 @@ Window::Window() {
 	}
 }
 
-
 void Window::create() {
 	window_thread = std::thread(&Window::windowHandler, this);
 
@@ -316,7 +315,6 @@ void Window::windowHandler() {
 			
 			renderDrawObject();
 
-
 			window.setView(screen_view);
 			window.draw(mouse_move_button);
 			window.draw(show_draw_object_button);
@@ -355,16 +353,16 @@ void GeometryDisplay::zoomViewAtPixel(sf::Vector2i pixel, sf::View & view, sf::R
 
 void Window::updateView() {
 	diagram_area.left = ui_border_thickness;
-	diagram_area.top = ui_border_thickness;
-	diagram_area.width = static_cast<float>(window_size.x) - ui_border_thickness * 2;
-	diagram_area.height = static_cast<float>(window_size.y) - ui_border_thickness * 2;
-	world_view.setViewport(sf::FloatRect(
-		normalize(diagram_area.left, 0.f, (float)window_size.x),
-		normalize(diagram_area.top, 0.f, (float)window_size.y),
-		normalize(diagram_area.width, 0.f, (float)window_size.x),
-		normalize(diagram_area.height, 0.f, (float)window_size.y)
-	));
-	//autoLineResolution();
+diagram_area.top = ui_border_thickness;
+diagram_area.width = static_cast<float>(window_size.x) - ui_border_thickness * 2;
+diagram_area.height = static_cast<float>(window_size.y) - ui_border_thickness * 2;
+world_view.setViewport(sf::FloatRect(
+	normalize(diagram_area.left, 0.f, (float)window_size.x),
+	normalize(diagram_area.top, 0.f, (float)window_size.y),
+	normalize(diagram_area.width, 0.f, (float)window_size.x),
+	normalize(diagram_area.height, 0.f, (float)window_size.y)
+));
+//autoLineResolution();
 }
 
 void Window::renderUI() {
@@ -443,10 +441,45 @@ void Window::autoSize() {
 			}
 		}
 		world_view.setCenter({ centre.x, centre.y });
-		world_view.setSize( {size.x, size.y} );
+		world_view.setSize({ size.x, size.y });
 
 	}
 	draw_object_vec_mutex.unlock();
+}
+
+void Window::loadShapeFromFile() {
+	FileDialog::OpenFile dialog;
+	dialog.create();
+	if (dialog.getStatus() == FileDialog::Success) {
+		loadShapeFromFile(dialog.getPath());
+	}
+	else if (dialog.getStatus() == FileDialog::Closed) {
+		return;
+	}
+	else {
+		std::cout << "Error: FileDialog failed\n";
+		return;
+	}
+}
+
+void Window::loadShapeFromFile(std::string path) {
+}
+
+void Window::saveShapeToFile() {
+	FileDialog::SaveFile dialog;
+	dialog.create();
+	if (dialog.getStatus() == FileDialog::Success) {
+		saveShapeToFile(dialog.getPath());
+	}
+	else if (dialog.getStatus() == FileDialog::Closed) {
+		return;
+	}
+	else {
+		std::cout << "Error: FileDialog failed\n";
+		return;
+	}
+}
+void Window::saveShapeToFile(std::string path) {
 }
 
 float GeometryDisplay::getClosestPointInRes(float v, float res) {

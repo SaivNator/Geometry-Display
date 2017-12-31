@@ -7,6 +7,7 @@
 #include <iostream>
 #include <ostream>
 #include <sstream>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <thread>
@@ -23,6 +24,7 @@
 #include <wykobi_algorithm.hpp>
 
 #include "StandardCursor.hpp"
+#include "FileDialog.hpp"
 
 namespace GeometryDisplay {
 	class DrawObject {
@@ -278,9 +280,34 @@ namespace GeometryDisplay {
 		Window();
 		Window(std::shared_ptr<sf::Font> font_ptr);							//constructor
 
+		/*
+		Init display
+		*/
+		void create();
+		void create(sf::Vector2u win_size);
+
+		/*
+		Wait for window_thread to close
+		This will block if the thread is joinable, else nothing happens
+		*/
+		void join();
+
+		/*
+		Close display
+		Kill thread
+		*/
+		void close();
+
+		/*
+		Append shape to window
+		*/
 		void addShape(DrawObject & shape);
 		void addShape(wykobi::polygon<float, 2> poly);
 		void addShape(wykobi::segment<float, 2> seg);
+
+		/*
+		Clear shapes from window
+		*/
 		void clearShapeVec();
 
 		/*
@@ -335,22 +362,20 @@ namespace GeometryDisplay {
 		sf::Vector2u getWindowSize();
 
 		/*
-		Wait for window_thread to close
-		This will block if the thread is joinable, else nothing happens
+		Load shapes from file
+		(will prompt dialog)
 		*/
-		void join();
+		void loadShapeFromFile();
+		void loadShapeFromFile(std::string path);
 
 		/*
-		Init display
+		Save files to file
+		(will promt dialog)
 		*/
-		void create();				
-		void create(sf::Vector2u win_size);
+		void saveShapeToFile();
+		void saveShapeToFile(std::string path);
 
-		/*
-		Close display
-		Kill thread
-		*/
-		void close();						
+					
 	};
 
 
@@ -410,11 +435,6 @@ namespace GeometryDisplay {
 		4 = bottom left
 	*/
 	void setViewPositionCorner(sf::View & view, sf::Vector2f point, int corner);
-
-	/*
-	Compute resolution for lines accoring to target????
-	*/
-	float computeLineResolution(float low, float high, int target);
 }
 
 #endif // !GeometryDisplay_HEADER
