@@ -792,14 +792,28 @@ void PolygonShape::appendVertex(sf::VertexArray & vertex_arr) {
 
 std::string DrawObject::toString() {
 	std::ostringstream stream;
-	stream << "name=\"" << name << "\"" << " ";
-	stream << "outer_line=" << outer_line << " ";
-	stream << "inner_fill=" << inner_fill << " ";
-	stream << "fill_color=" << std::hex << fill_color.toInteger() << " ";
-	stream << "fill_color_alpha=" << std::hex << fill_color.a << " ";
-	stream << "line_color=" << std::hex << line_color.toInteger() << " ";
-	stream << "line_color_alpha=" << std::hex << line_color.a << " ";
-	stream << "outer_line_thickness=" << outer_line_thickness << " ";
+	if (!name.empty()) {
+		stream << "name=\"" << name << "\"" << " ";
+	}
+	if (outer_line) {
+		stream << "outer_line=" << outer_line << " ";
+		if (line_color.a != 0xff) {
+			stream << "line_color=" << std::hex << line_color.toInteger() << std::hex << line_color.a << " ";
+		}
+		else {
+			stream << "line_color=" << std::hex << line_color.toInteger() << " ";
+		}
+		stream << "outer_line_thickness=" << outer_line_thickness << " ";
+	}
+	if (inner_fill) {
+		stream << "inner_fill=" << inner_fill << " ";
+		if (fill_color.a != 0xff) {
+			stream << "fill_color=" << std::hex << fill_color.toInteger() << std::hex << fill_color.a << " ";
+		}
+		else {
+			stream << "fill_color=" << std::hex << fill_color.toInteger() << " ";
+		}
+	}
 	return stream.str();
 }
 
