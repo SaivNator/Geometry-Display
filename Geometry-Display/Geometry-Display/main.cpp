@@ -49,8 +49,10 @@ int main() {
 	w.addShape(p1);
 	w.addShape(p2);
 
+	w.clearShapeVec();
+
 	//w.saveShapeToFile();
-	//w.loadShapeFromFile();
+	w.loadShapeFromFile();
 
 
 	w.join();

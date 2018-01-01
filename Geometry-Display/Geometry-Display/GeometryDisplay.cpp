@@ -464,13 +464,11 @@ void Window::loadShapeFromFile() {
 
 void Window::loadShapeFromFile(std::string path) {
 	std::fstream file;
-	file.open(path);
-
 	std::string line;
-
-	std::unordered_map<std::string, std::string> settings_map;
-
+	file.open(path);
+	draw_object_vec_mutex.lock();
 	while (std::getline(file, line)) {
+		std::unordered_map<std::string, std::string> settings_map;
 		auto vec_1 = splitString(line, ' ');
 		for (std::string & str : vec_1) {
 			auto vec_2 = splitString(str, '=');
@@ -478,16 +476,27 @@ void Window::loadShapeFromFile(std::string path) {
 				settings_map.emplace(vec_2[0], vec_2[1]);
 			}
 		}
-
-		for (auto it = settings_map.begin(); it != settings_map.end(); ++it) {
-			std::cout << it->first << " -> " << it->second << "\n";
+		//for (auto & pair : settings_map) {
+		//	std::cout << pair.first << "	" << pair.second << "\n";
+		//}
+		//check type
+		std::unordered_map<std::string, std::string>::iterator it;
+		it = settings_map.find("type");
+		if (it != settings_map.end()) {
+			if (it->second == "polygon") {
+				//std::cout << "polygon\n";
+				draw_object_vec.push_back(std::unique_ptr<DrawObject>(new PolygonShape(settings_map)));
+			}
+			else if (it->second == "line") {
+				draw_object_vec.push_back(std::unique_ptr<DrawObject>(new LineShape(settings_map)));
+			}
 		}
-
-		std::cout << "\n";
-
 	}
+	draw_object_vec_mutex.unlock();
 
-	
+	window_mutex.lock();
+	update_frame = true;
+	window_mutex.unlock();
 
 	file.close();
 }
@@ -877,12 +886,14 @@ PolygonShape::PolygonShape(std::unordered_map<std::string, std::string> & settin
 {
 	std::unordered_map<std::string, std::string>::iterator it;
 	it = settings_map.find("polygon");
-	polygon = wykobi::make_polygon(parsePoints(it->second));
+	if (it != settings_map.end()) {
+		polygon = wykobi::make_polygon(parsePoints(it->second));
+	}
 }
 
 std::string PolygonShape::toString() {
 	std::ostringstream stream;
-	stream << "type=" << "line" << " ";
+	stream << "type=" << "polygon" << " ";
 	stream << DrawObject::toString();
 	stream << "polygon={";
 	for (std::size_t i = 0; i < polygon.size(); ++i) {
@@ -917,7 +928,12 @@ void LineShape::appendVertex(sf::VertexArray & vertex_arr) {
 LineShape::LineShape(std::unordered_map<std::string, std::string> & settings_map) 
 	: DrawObject(settings_map)
 {
-
+	std::unordered_map<std::string, std::string>::iterator it;
+	it = settings_map.find("segment");
+	if (it != settings_map.end()) {
+		auto point_vec = parsePoints(it->second);
+		segment = wykobi::make_segment(point_vec[0], point_vec[1]);
+	}
 }
 
 std::string LineShape::toString() {
