@@ -37,29 +37,30 @@ namespace GeometryDisplay {
 		sf::Color line_color;
 		float outer_line_thickness = 2.f;
 
+		DrawObject();
+		DrawObject(std::unordered_map<std::string, std::string> & settings_map);
 		virtual sf::Vector2f getCentroid() = 0;
 		virtual wykobi::rectangle<float> getBoundingRectangle() = 0;
 		virtual DrawObject* clone() = 0;
 		virtual void appendVertex(sf::VertexArray & vertex_arr) = 0;
-		virtual void create(std::unordered_map<std::string, std::string> & settings_map);
 		virtual std::string toString();
 	};
-	class TriangleShape : public DrawObject {
-	public:
-		wykobi::triangle<float, 2> triangle;
-		TriangleShape(float x0, float y0, float x1, float y1, float x2, float y2);
-		TriangleShape* clone() override;
-		void appendVertex(sf::VertexArray & vertex_arr) override;
-	};
+	//class TriangleShape : public DrawObject {
+	//public:
+	//	wykobi::triangle<float, 2> triangle;
+	//	TriangleShape(float x0, float y0, float x1, float y1, float x2, float y2);
+	//	TriangleShape* clone() override;
+	//	void appendVertex(sf::VertexArray & vertex_arr) override;
+	//};
 	class PolygonShape : public DrawObject {
 	public:
 		wykobi::polygon<float, 2> polygon;
 		PolygonShape(wykobi::polygon<float, 2> poly);
+		PolygonShape(std::unordered_map<std::string, std::string> & settings_map);
 		PolygonShape* clone() override;
 		sf::Vector2f getCentroid() override;
 		wykobi::rectangle<float> getBoundingRectangle() override;
 		void appendVertex(sf::VertexArray & vertex_arr) override;
-		void create(std::unordered_map<std::string, std::string> & settings_map) override;
 		std::string toString() override;
 	};
 	class LineShape : public DrawObject {
@@ -67,11 +68,11 @@ namespace GeometryDisplay {
 		wykobi::segment<float, 2> segment;
 		float thickness = 1.f;
 		LineShape(wykobi::segment<float, 2> seg);
+		LineShape(std::unordered_map<std::string, std::string> & settings_map);
 		LineShape* clone() override;
 		sf::Vector2f getCentroid() override;
 		wykobi::rectangle<float> getBoundingRectangle() override;
 		void appendVertex(sf::VertexArray & vertex_arr) override;
-		//void create(std::unordered_map<std::string, std::string> & settings_map) override;
 		std::string toString() override;
 	};
 

@@ -50,7 +50,8 @@ int main() {
 	w.addShape(p2);
 
 	//w.saveShapeToFile();
-	w.loadShapeFromFile();
+	//w.loadShapeFromFile();
+
 
 	w.join();
 	
