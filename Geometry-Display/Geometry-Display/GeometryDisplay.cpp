@@ -463,6 +463,33 @@ void Window::loadShapeFromFile() {
 }
 
 void Window::loadShapeFromFile(std::string path) {
+	std::fstream file;
+	file.open(path);
+
+	std::string line;
+
+	std::unordered_map<std::string, std::string> settings_map;
+
+	while (std::getline(file, line)) {
+		auto vec_1 = splitString(line, ' ');
+		for (std::string & str : vec_1) {
+			auto vec_2 = splitString(str, '=');
+			if (vec_2.size() == 2) {
+				settings_map.emplace(vec_2[0], vec_2[1]);
+			}
+		}
+
+		for (auto it = settings_map.begin(); it != settings_map.end(); ++it) {
+			std::cout << it->first << " -> " << it->second << "\n";
+		}
+
+		std::cout << "\n";
+
+	}
+
+	
+
+	file.close();
 }
 
 void Window::saveShapeToFile() {
@@ -480,18 +507,14 @@ void Window::saveShapeToFile() {
 	}
 }
 void Window::saveShapeToFile(std::string path) {
-	
 	draw_object_vec_mutex.lock();
-	//make array to write
 	std::ofstream file;
 	file.open(path);
-
 	for (auto it = draw_object_vec.begin(); it != draw_object_vec.end(); ++it) {
 		file << (*it)->toString();
+		file << '\n';
 	}
-
 	draw_object_vec_mutex.unlock();
-
 	file.flush();
 	file.close();
 }
@@ -790,6 +813,34 @@ void PolygonShape::appendVertex(sf::VertexArray & vertex_arr) {
 	}
 }
 
+void DrawObject::create(std::unordered_map<std::string, std::string> & settings_map) {
+	std::unordered_map<std::string, std::string>::iterator it;
+	it = settings_map.find("name");
+	if (it != settings_map.end()) {
+		name = it->second;
+	}
+	it = settings_map.find("outer_line");
+	if (it != settings_map.end()) {
+		std::istringstream(it->second) >> std::boolalpha >> outer_line;
+	}
+	it = settings_map.find("line_color");
+	if (it != settings_map.end()) {
+		line_color = parseColor(it->second);
+	}
+	it = settings_map.find("outer_line_thickness");
+	if (it != settings_map.end()) {
+		outer_line_thickness = std::atof(it->second.c_str());
+	}
+	it = settings_map.find("inner_fill");
+	if (it != settings_map.end()) {
+		std::istringstream(it->second) >> std::boolalpha >> inner_fill;
+	}
+	it = settings_map.find("fill_color");
+	if (it != settings_map.end()) {
+		fill_color = parseColor(it->second);
+	}
+}
+
 std::string DrawObject::toString() {
 	std::ostringstream stream;
 	if (!name.empty()) {
@@ -817,6 +868,14 @@ std::string DrawObject::toString() {
 	return stream.str();
 }
 
+void PolygonShape::create(std::unordered_map<std::string, std::string> & settings_map) {
+	std::unordered_map<std::string, std::string>::iterator it;
+	it = settings_map.find("polygon");
+
+
+
+}
+
 std::string PolygonShape::toString() {
 	std::ostringstream stream;
 	stream << "type=" << "line" << " ";
@@ -826,7 +885,7 @@ std::string PolygonShape::toString() {
 		stream << "(" << polygon[i].x << "," << polygon[i].y << ")";
 	}
 	stream << "}";
-	stream << "\n";
+	stream << " ";
 	return stream.str();
 }
 
@@ -861,7 +920,7 @@ std::string LineShape::toString() {
 		stream << "(" << segment[i].x << "," << segment[i].y << ")";
 	}
 	stream << "}";
-	stream << "\n";
+	stream << " ";
 	return stream.str();
 }
 
@@ -942,6 +1001,78 @@ void GeometryDisplay::setViewPositionCorner(sf::View & view, sf::Vector2f point,
 	default:
 		break;
 	}
+}
+
+std::vector<std::string> GeometryDisplay::splitString(std::string & str, char c) {
+	std::vector<std::string> str_vec;
+	std::size_t i = 0;
+	std::size_t j;
+	std::size_t len;
+	while (i < str.size()) {
+		j = str.find_first_of(c, i);
+		if (j == str.npos) {
+			len = str.size() - i;
+			if (len > 0) {
+				str_vec.push_back(str.substr(i, str.npos));
+			}
+			break;
+		}
+		else {
+			len = j - i;
+			if (len > 0) {
+				str_vec.push_back(str.substr(i, len));
+			}
+			i = j + 1;
+		}
+	}
+	return str_vec;
+}
+
+sf::Color GeometryDisplay::parseColor(std::string & str) {
+	if (str.size == 6) {
+		std::stringstream ss;
+		sf::Uint32 rgb;
+		ss << std::hex << str;
+		ss >> rgb;
+		return sf::Color(rgb);
+	}
+	else if (str.size() == 8) {
+		std::stringstream ss;
+		sf::Uint32 rgb;
+		sf::Uint8 alpha;
+		ss << std::hex << str.substr(0, 6);
+		ss >> rgb;
+		ss.clear();
+		ss << std::hex << str.substr(6, str.npos);
+		ss >> alpha;
+		sf::Color color(rgb);
+		color.a = alpha;
+		return color;
+	}
+	else {
+		return sf::Color();
+	}
+}
+
+wykobi::point2d<float> GeometryDisplay::parsePoint(std::string str) {
+	if (str.front() == '(') {
+		str.erase(str.begin());
+	}
+	if (str.back() == ')') {
+		str.erase(str.end() - 1);
+	}
+	auto vec = splitString(str, ',');
+	return wykobi::make_point<float>(std::atof(vec[0].c_str()), std::atof(vec[1].c_str()));
+}
+
+std::vector<wykobi::point2d<float>> GeometryDisplay::parsePoints(std::string & str) {
+	std::vector<wykobi::point2d<float>> out_vec;
+
+	str.erase(str.begin());
+	str.erase(str.end() - 1);
+
+	auto str_vec = splitString()
+
 }
 
 //end

@@ -49,7 +49,8 @@ int main() {
 	w.addShape(p1);
 	w.addShape(p2);
 
-	w.saveShapeToFile();
+	//w.saveShapeToFile();
+	w.loadShapeFromFile();
 
 	w.join();
 	

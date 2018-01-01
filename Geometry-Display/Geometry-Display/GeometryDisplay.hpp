@@ -10,6 +10,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -30,16 +31,17 @@ namespace GeometryDisplay {
 	class DrawObject {
 	public:
 		std::string name;
+		bool inner_fill = true;
+		bool outer_line = false;
 		sf::Color fill_color;
 		sf::Color line_color;
-		bool outer_line = false;
-		bool inner_fill = true;
 		float outer_line_thickness = 2.f;
 
 		virtual sf::Vector2f getCentroid() = 0;
 		virtual wykobi::rectangle<float> getBoundingRectangle() = 0;
 		virtual DrawObject* clone() = 0;
 		virtual void appendVertex(sf::VertexArray & vertex_arr) = 0;
+		virtual void create(std::unordered_map<std::string, std::string> & settings_map);
 		virtual std::string toString();
 	};
 	class TriangleShape : public DrawObject {
@@ -57,6 +59,7 @@ namespace GeometryDisplay {
 		sf::Vector2f getCentroid() override;
 		wykobi::rectangle<float> getBoundingRectangle() override;
 		void appendVertex(sf::VertexArray & vertex_arr) override;
+		void create(std::unordered_map<std::string, std::string> & settings_map) override;
 		std::string toString() override;
 	};
 	class LineShape : public DrawObject {
@@ -68,6 +71,7 @@ namespace GeometryDisplay {
 		sf::Vector2f getCentroid() override;
 		wykobi::rectangle<float> getBoundingRectangle() override;
 		void appendVertex(sf::VertexArray & vertex_arr) override;
+		//void create(std::unordered_map<std::string, std::string> & settings_map) override;
 		std::string toString() override;
 	};
 
@@ -439,6 +443,28 @@ namespace GeometryDisplay {
 		4 = bottom left
 	*/
 	void setViewPositionCorner(sf::View & view, sf::Vector2f point, int corner);
+
+	/*
+	Split string with char
+	*/
+	std::vector<std::string> splitString(std::string & str, char c);
+
+	/*
+	Capture strings inside encaptulation
+	*/
+
+
+	/*
+	Parse std::string to sf::color
+	*/
+	sf::Color parseColor(std::string & str);
+
+	/*
+	Parse shape verticies from std::string
+	*/
+	wykobi::point2d<float> parsePoint(std::string str);
+	std::vector<wykobi::point2d<float>> parsePoints(std::string & str);
+
 }
 
 #endif // !GeometryDisplay_HEADER
