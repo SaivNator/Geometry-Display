@@ -834,7 +834,7 @@ DrawObject::DrawObject(std::unordered_map<std::string, std::string> & settings_m
 	}
 	it = settings_map.find("outer_line");
 	if (it != settings_map.end()) {
-		std::istringstream(it->second) >> std::boolalpha >> outer_line;
+		std::istringstream(it->second) >> outer_line;
 	}
 	it = settings_map.find("line_color");
 	if (it != settings_map.end()) {
@@ -846,7 +846,7 @@ DrawObject::DrawObject(std::unordered_map<std::string, std::string> & settings_m
 	}
 	it = settings_map.find("inner_fill");
 	if (it != settings_map.end()) {
-		std::istringstream(it->second) >> std::boolalpha >> inner_fill;
+		std::istringstream(it->second) >> inner_fill;
 	}
 	it = settings_map.find("fill_color");
 	if (it != settings_map.end()) {
@@ -929,6 +929,10 @@ LineShape::LineShape(std::unordered_map<std::string, std::string> & settings_map
 	: DrawObject(settings_map)
 {
 	std::unordered_map<std::string, std::string>::iterator it;
+	it = settings_map.find("thickness");
+	if (it != settings_map.end()) {
+		thickness = (float)std::atof(it->second.c_str());
+	}
 	it = settings_map.find("segment");
 	if (it != settings_map.end()) {
 		auto point_vec = parsePoints(it->second);
