@@ -28,31 +28,31 @@ int main() {
 	w.create({ 1000, 600 });
 	w.setMouseMove(true);
 
-	GeometryDisplay::LineShape line(wykobi::make_segment<float>(10, 10, 300, 400));
-	line.thickness = 10.f;
-	w.addShape(line);
-
-	GeometryDisplay::PolygonShape p1(wykobi::make_polygon(wykobi::make_circle(100.f, 100.f, 50.f), 100));
-	p1.name = "P1";
-	p1.inner_fill = true;
-	p1.outer_line = true;
-	p1.fill_color = sf::Color::Green;
-	p1.line_color = sf::Color::Cyan;
-
-	GeometryDisplay::PolygonShape p2(wykobi::make_polygon(wykobi::make_circle(100.f, -500.f, 50.f), 100));
-	p2.name = "P2";
-	p2.inner_fill = true;
-	p2.outer_line = true;
-	p2.fill_color = sf::Color::Green;
-	p2.line_color = sf::Color::Cyan;
-
-	w.addShape(p1);
-	w.addShape(p2);
-
-	w.clearShapeVec();
+	//GeometryDisplay::LineShape line(wykobi::make_segment<float>(10, 10, 300, 400));
+	//line.thickness = 10.f;
+	//w.addShape(line);
+	//
+	//GeometryDisplay::PolygonShape p1(wykobi::make_polygon(wykobi::make_circle(100.f, 100.f, 50.f), 100));
+	//p1.name = "P1";
+	//p1.inner_fill = true;
+	//p1.outer_line = true;
+	//p1.fill_color = sf::Color::Green;
+	//p1.line_color = sf::Color::Cyan;
+	//
+	//GeometryDisplay::PolygonShape p2(wykobi::make_polygon(wykobi::make_circle(100.f, -500.f, 50.f), 100));
+	//p2.name = "P2";
+	//p2.inner_fill = true;
+	//p2.outer_line = true;
+	//p2.fill_color = sf::Color::Green;
+	//p2.line_color = sf::Color::Cyan;
+	//
+	//w.addShape(p1);
+	//w.addShape(p2);
+	//
+	//w.clearShapeVec();
 
 	//w.saveShapeToFile();
-	w.loadShapeFromFile();
+	//w.loadShapeFromFile();
 
 
 	w.join();

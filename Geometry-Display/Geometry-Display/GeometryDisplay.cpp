@@ -178,29 +178,56 @@ Window::Window() {
 void Window::create() {
 	window_thread = std::thread(&Window::windowHandler, this);
 
+	//init new button
+	clear_draw_object_vec_button.setFont(text_font);
+	clear_draw_object_vec_button.not_click_text = "New";
+	clear_draw_object_vec_button.click_text = "New";
+	clear_draw_object_vec_button.setArea(sf::IntRect(0, 0, 30, 30));
+	clear_draw_object_vec_button.not_click_color = { 204, 204, 204 };
+	clear_draw_object_vec_button.click_color = { 91, 105, 233 };
+
+	//init load button
+	load_draw_object_button.setFont(text_font);
+	load_draw_object_button.not_click_text = "Load";
+	load_draw_object_button.click_text = "Load";
+	load_draw_object_button.setArea(sf::IntRect(0, 0, 30, 30));
+	load_draw_object_button.positionRight(clear_draw_object_vec_button);
+	load_draw_object_button.not_click_color = { 204, 204, 204 };
+	load_draw_object_button.click_color = { 91, 105, 233 };
+
+	//init save button
+	save_draw_object_button.setFont(text_font);
+	save_draw_object_button.not_click_text = "Save";
+	save_draw_object_button.click_text = "Save";
+	save_draw_object_button.setArea(sf::IntRect(0, 0, 30, 30));
+	save_draw_object_button.positionRight(load_draw_object_button);
+	save_draw_object_button.not_click_color = { 204, 204, 204 };
+	save_draw_object_button.click_color = { 91, 105, 233 };
+
 	//init move button
 	mouse_move_button.setFont(text_font);
 	mouse_move_button.not_toggle_text = "Move\nMode";
 	mouse_move_button.toggle_text = "Move\nMode";
 	mouse_move_button.setArea(sf::IntRect(0, 0, 30, 30));
+	mouse_move_button.positionRight(save_draw_object_button);
 	mouse_move_button.not_toggle_color = { 204, 204, 204 };
 	mouse_move_button.toggle_color = { 91, 105, 233 };
 
 	//init show shape text button
-	show_draw_object_button.setFont(text_font);
-	show_draw_object_button.not_toggle_text = "Show\nName";
-	show_draw_object_button.toggle_text = "Hide\nName";
-	show_draw_object_button.setArea(sf::IntRect(0, 0, 30, 30));
-	show_draw_object_button.positionRight(mouse_move_button);
-	show_draw_object_button.not_toggle_color = { 204, 204, 204 };
-	show_draw_object_button.toggle_color = { 91, 105, 233 };
+	show_draw_object_name_button.setFont(text_font);
+	show_draw_object_name_button.not_toggle_text = "Show\nName";
+	show_draw_object_name_button.toggle_text = "Hide\nName";
+	show_draw_object_name_button.setArea(sf::IntRect(0, 0, 30, 30));
+	show_draw_object_name_button.positionRight(mouse_move_button);
+	show_draw_object_name_button.not_toggle_color = { 204, 204, 204 };
+	show_draw_object_name_button.toggle_color = { 91, 105, 233 };
 
 	//init lock button
 	lock_world_view_scale_button.setFont(text_font);
 	lock_world_view_scale_button.not_toggle_text = "Lock\nScale";
 	lock_world_view_scale_button.toggle_text = "Free\nScale";
 	lock_world_view_scale_button.setArea(sf::IntRect(0, 0, 30, 30));
-	lock_world_view_scale_button.positionRight(show_draw_object_button);
+	lock_world_view_scale_button.positionRight(show_draw_object_name_button);
 	lock_world_view_scale_button.not_toggle_color = { 204, 204, 204 };
 	lock_world_view_scale_button.toggle_color = { 91, 105, 233 };
 
@@ -268,11 +295,31 @@ void Window::windowHandler() {
 				break;
 			case sf::Event::MouseButtonPressed:
 				mouse_pos = { e.mouseButton.x, e.mouseButton.y };
+				
+				clear_draw_object_vec_button.click(mouse_pos);
+				load_draw_object_button.click(mouse_pos);
+				save_draw_object_button.click(mouse_pos);
 				mouse_move_button.click(mouse_pos);
-				show_draw_object_button.click(mouse_pos);
+				show_draw_object_name_button.click(mouse_pos);
 				lock_world_view_scale_button.click(mouse_pos);
 				auto_size_button.click(mouse_pos);
+				
 				mouse_left_down = true;
+				
+				if (clear_draw_object_vec_button.getState()) {
+					draw_object_vec_mutex.lock();
+					draw_object_vec.clear();
+					draw_object_vec_mutex.unlock();
+					update_frame = true;
+				}
+				if (load_draw_object_button.getState()) {
+					loadShapeFromFile();
+					update_frame = true;
+				}
+				if (save_draw_object_button.getState()) {
+					saveShapeToFile();
+					update_frame = true;
+				}
 				if (mouse_move_button.getState()) {
 					if (diagram_area.contains(static_cast<float>(mouse_pos.x), static_cast<float>(mouse_pos.y))) {
 						if (!mouse_left_bounce) {
@@ -289,8 +336,11 @@ void Window::windowHandler() {
 				mouse_pos = { e.mouseButton.x, e.mouseButton.y };
 				mouse_left_down = false;
 				mouse_left_bounce = false;
+				clear_draw_object_vec_button.release();
+				load_draw_object_button.release();
+				save_draw_object_button.release();
 				mouse_move_button.release();
-				show_draw_object_button.release();
+				show_draw_object_name_button.release();
 				lock_world_view_scale_button.release();
 				auto_size_button.release();
 				update_frame = true;
@@ -316,8 +366,12 @@ void Window::windowHandler() {
 			renderDrawObject();
 
 			window.setView(screen_view);
+
+			window.draw(clear_draw_object_vec_button);
+			window.draw(load_draw_object_button);
+			window.draw(save_draw_object_button);
 			window.draw(mouse_move_button);
-			window.draw(show_draw_object_button);
+			window.draw(show_draw_object_name_button);
 			window.draw(lock_world_view_scale_button);
 			window.draw(auto_size_button);
 			
@@ -476,15 +530,11 @@ void Window::loadShapeFromFile(std::string path) {
 				settings_map.emplace(vec_2[0], vec_2[1]);
 			}
 		}
-		//for (auto & pair : settings_map) {
-		//	std::cout << pair.first << "	" << pair.second << "\n";
-		//}
 		//check type
 		std::unordered_map<std::string, std::string>::iterator it;
 		it = settings_map.find("type");
 		if (it != settings_map.end()) {
 			if (it->second == "polygon") {
-				//std::cout << "polygon\n";
 				draw_object_vec.push_back(std::unique_ptr<DrawObject>(new PolygonShape(settings_map)));
 			}
 			else if (it->second == "line") {
@@ -493,10 +543,6 @@ void Window::loadShapeFromFile(std::string path) {
 		}
 	}
 	draw_object_vec_mutex.unlock();
-
-	window_mutex.lock();
-	update_frame = true;
-	window_mutex.unlock();
 
 	file.close();
 }
@@ -685,8 +731,7 @@ void Window::renderDrawObject() {
 	draw_object_vec_mutex.unlock();
 	window.setView(world_view);
 	window.draw(draw_object_vertex_array);
-
-	if (show_draw_object_button.getState()) {
+	if (show_draw_object_name_button.getState()) {
 		//render object names
 		window.setView(screen_view);
 		draw_object_vec_mutex.lock();

@@ -210,15 +210,19 @@ namespace GeometryDisplay {
 
 		sf::Color window_background_color = sf::Color::White;
 
+		//Buttons
+		PushButton clear_draw_object_vec_button;
+		PushButton load_draw_object_button;
+		PushButton save_draw_object_button;
+		ToggleButton show_draw_object_name_button;
+		ToggleButton lock_world_view_scale_button;
+		ToggleButton mouse_move_button;
+		PushButton auto_size_button;
+
 		std::mutex draw_object_vec_mutex;
 		std::vector<std::unique_ptr<DrawObject>> draw_object_vec;
 		sf::VertexArray draw_object_vertex_array = sf::VertexArray(sf::Triangles);
 		unsigned int draw_object_text_size = 20;
-		ToggleButton show_draw_object_button;
-
-		//lock world view scale (x and y has same scale)
-		ToggleButton lock_world_view_scale_button;
-		PushButton auto_size_button;
 		
 		sf::VertexArray ui_vertex_array = sf::VertexArray(sf::Triangles);
 		std::vector<sf::Text> ui_text_vector;
@@ -239,7 +243,6 @@ namespace GeometryDisplay {
 		sf::Color diagram_line_color = { 0, 0, 255, 255 / 2 };
 
 		//mouse move
-		ToggleButton mouse_move_button;
 		bool mouse_left_down = false;
 		bool mouse_left_bounce = false;
 		sf::Vector2i mouse_pos;
