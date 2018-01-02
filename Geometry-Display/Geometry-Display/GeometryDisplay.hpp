@@ -17,6 +17,8 @@
 #include <atomic>
 #include <functional>
 #include <memory>
+#include <functional>
+
 #include <cmath>
 
 #include <SFML\Graphics.hpp>
@@ -37,7 +39,7 @@ namespace GeometryDisplay {
 		sf::Color line_color;
 		float outer_line_thickness = 2.f;
 
-		DrawObject();
+		DrawObject() = default;
 		DrawObject(std::unordered_map<std::string, std::string> & settings_map);
 		virtual sf::Vector2f getCentroid() = 0;
 		virtual wykobi::rectangle<float> getBoundingRectangle() = 0;
@@ -45,13 +47,6 @@ namespace GeometryDisplay {
 		virtual void appendVertex(sf::VertexArray & vertex_arr) = 0;
 		virtual std::string toString();
 	};
-	//class TriangleShape : public DrawObject {
-	//public:
-	//	wykobi::triangle<float, 2> triangle;
-	//	TriangleShape(float x0, float y0, float x1, float y1, float x2, float y2);
-	//	TriangleShape* clone() override;
-	//	void appendVertex(sf::VertexArray & vertex_arr) override;
-	//};
 	class PolygonShape : public DrawObject {
 	public:
 		wykobi::polygon<float, 2> polygon;
@@ -106,7 +101,7 @@ namespace GeometryDisplay {
 		/*
 		Get current state of button
 		*/
-		virtual bool getState() = 0;
+		//virtual bool getState() = 0;
 
 		/*
 		Set Button area
@@ -126,6 +121,9 @@ namespace GeometryDisplay {
 		bool force_push = false;
 		virtual void draw(sf::RenderTarget & target, sf::RenderStates states) const;
 	public:
+
+		std::function<void()> push_function;
+
 		std::string not_click_text = "button off";
 		std::string click_text = "button on";
 		sf::Color not_click_text_color;
@@ -137,7 +135,7 @@ namespace GeometryDisplay {
 		/*
 		Override button, force click
 		*/
-		void forcePush();
+		//void forcePush();
 
 		/*
 		
@@ -147,10 +145,10 @@ namespace GeometryDisplay {
 		/*
 		Get state, will only return true once for each click
 		*/
-		bool getState() override;
+		//bool getState() override;
 
 		/*
-		
+		Reset button when mouse button is released
 		*/
 		void release() override;
 	};
@@ -161,6 +159,8 @@ namespace GeometryDisplay {
 		bool bounce = false;
 		virtual void draw(sf::RenderTarget & target, sf::RenderStates states) const;
 	public:
+		std::function<void(bool)> toggle_function;
+
 		std::string not_toggle_text = "button off";
 		std::string toggle_text = "button on";
 		sf::Color not_toggle_text_color;
@@ -189,8 +189,20 @@ namespace GeometryDisplay {
 		false = not toggeled
 		true = toggeled
 		*/
-		bool getState() override;
+		//bool getState() override;
 	};
+
+	//class DrawObjectMaker {
+	//
+	//public:
+	//
+	//	enum State {
+	//
+	//	};
+	//
+	//	virtual void addPoint(sf::Vector2f point);
+	//
+	//};
 
 	class Window {
 	private:
@@ -209,15 +221,6 @@ namespace GeometryDisplay {
 		std::thread window_thread;
 
 		sf::Color window_background_color = sf::Color::White;
-
-		//Buttons
-		PushButton clear_draw_object_vec_button;
-		PushButton load_draw_object_button;
-		PushButton save_draw_object_button;
-		ToggleButton show_draw_object_name_button;
-		ToggleButton lock_world_view_scale_button;
-		ToggleButton mouse_move_button;
-		PushButton auto_size_button;
 
 		std::mutex draw_object_vec_mutex;
 		std::vector<std::unique_ptr<DrawObject>> draw_object_vec;
@@ -243,6 +246,7 @@ namespace GeometryDisplay {
 		sf::Color diagram_line_color = { 0, 0, 255, 255 / 2 };
 
 		//mouse move
+		bool mouse_move = true;
 		bool mouse_left_down = false;
 		bool mouse_left_bounce = false;
 		sf::Vector2i mouse_pos;
@@ -250,6 +254,36 @@ namespace GeometryDisplay {
 		sf::Vector2f mouse_start_pos;
 		float mouse_zoom_amount = 1.1f;
 		bool mouse_middle_down = false;
+
+		//show draw object name
+		bool show_draw_object_name = false;
+
+		//lock scale
+		bool lock_world_view_scale = false;
+
+		//Buttons
+		PushButton clear_draw_object_vec_button;
+		PushButton load_draw_object_button;
+		PushButton save_draw_object_button;
+		ToggleButton show_draw_object_name_button;
+		ToggleButton lock_world_view_scale_button;
+		ToggleButton mouse_move_button;
+		PushButton auto_size_button;
+		PushButton make_polygon_button;
+		PushButton make_line_button;
+
+		/*
+		Button member functions
+		*/
+		void buttonFunc_clear_draw_object();
+		void buttonFunc_load_draw_object();
+		void buttonFunc_save_draw_object();
+		void buttonFunc_show_draw_object_name(bool t);
+		void buttonFunc_lock_world_view_scale(bool t);
+		void buttonFunc_mouse_move(bool t);
+		void buttonFunc_auto_size();
+		//void buttonFunc_make_polygon();
+		//void buttonFunc_make_line();
 
 		/*
 		Window thread function

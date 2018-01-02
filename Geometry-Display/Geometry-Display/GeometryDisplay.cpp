@@ -4,8 +4,6 @@
 
 using namespace GeometryDisplay;
 
-
-
 void UIPosition::positionOver(UIPosition & parent) {
 	this->area.left = parent.area.left;
 	this->area.top = parent.area.top - this->area.height;
@@ -42,31 +40,32 @@ void Button::setArea(sf::IntRect button_area) {
 	area = button_area;
 }
 
-void PushButton::forcePush() {
-	force_push = true;
-}
+//void PushButton::forcePush() {
+//	force_push = true;
+//}
 
 void PushButton::click(const sf::Vector2i & mouse_pos) {
 	if (!bounce) {
 		if (area.contains(mouse_pos)) {
 			is_clicked = true;
+			push_function();
 		}
 	}
 }
 
-bool PushButton::getState() {
-	if (force_push) {
-		force_push = false;
-		return true;
-	}
-	else if (is_clicked && !bounce) {
-		bounce = true;
-		return true;
-	}
-	else {
-		return false;
-	}
-}
+//bool PushButton::getState() {
+//	if (force_push) {
+//		force_push = false;
+//		return true;
+//	}
+//	else if (is_clicked && !bounce) {
+//		bounce = true;
+//		return true;
+//	}
+//	else {
+//		return false;
+//	}
+//}
 
 void PushButton::release() {
 	is_clicked = false;
@@ -113,6 +112,7 @@ void ToggleButton::click(const sf::Vector2i & mouse_pos) {
 		if (area.contains(mouse_pos)) {
 			toggle = !toggle;
 			bounce = true;
+			toggle_function(toggle);
 		}
 	}
 }
@@ -125,9 +125,9 @@ void ToggleButton::release() {
 	bounce = false;
 }
 
-bool ToggleButton::getState() {
-	return toggle;
-}
+//bool ToggleButton::getState() {
+//	return toggle;
+//}
 
 void ToggleButton::draw(sf::RenderTarget & target, sf::RenderStates states) const {
 	sf::VertexArray vertex_array(sf::Triangles);
@@ -185,6 +185,7 @@ void Window::create() {
 	clear_draw_object_vec_button.setArea(sf::IntRect(0, 0, 30, 30));
 	clear_draw_object_vec_button.not_click_color = { 204, 204, 204 };
 	clear_draw_object_vec_button.click_color = { 91, 105, 233 };
+	clear_draw_object_vec_button.push_function = std::bind(&Window::buttonFunc_clear_draw_object, this);
 
 	//init load button
 	load_draw_object_button.setFont(text_font);
@@ -194,6 +195,7 @@ void Window::create() {
 	load_draw_object_button.positionRight(clear_draw_object_vec_button);
 	load_draw_object_button.not_click_color = { 204, 204, 204 };
 	load_draw_object_button.click_color = { 91, 105, 233 };
+	load_draw_object_button.push_function = std::bind(&Window::buttonFunc_load_draw_object, this);
 
 	//init save button
 	save_draw_object_button.setFont(text_font);
@@ -203,6 +205,7 @@ void Window::create() {
 	save_draw_object_button.positionRight(load_draw_object_button);
 	save_draw_object_button.not_click_color = { 204, 204, 204 };
 	save_draw_object_button.click_color = { 91, 105, 233 };
+	save_draw_object_button.push_function = std::bind(&Window::buttonFunc_save_draw_object, this);
 
 	//init move button
 	mouse_move_button.setFont(text_font);
@@ -212,6 +215,7 @@ void Window::create() {
 	mouse_move_button.positionRight(save_draw_object_button);
 	mouse_move_button.not_toggle_color = { 204, 204, 204 };
 	mouse_move_button.toggle_color = { 91, 105, 233 };
+	mouse_move_button.toggle_function = std::bind(&Window::buttonFunc_mouse_move, this, std::placeholders::_1);
 
 	//init show shape text button
 	show_draw_object_name_button.setFont(text_font);
@@ -221,6 +225,7 @@ void Window::create() {
 	show_draw_object_name_button.positionRight(mouse_move_button);
 	show_draw_object_name_button.not_toggle_color = { 204, 204, 204 };
 	show_draw_object_name_button.toggle_color = { 91, 105, 233 };
+	show_draw_object_name_button.toggle_function = std::bind(&Window::buttonFunc_show_draw_object_name, this, std::placeholders::_1);
 
 	//init lock button
 	lock_world_view_scale_button.setFont(text_font);
@@ -230,6 +235,7 @@ void Window::create() {
 	lock_world_view_scale_button.positionRight(show_draw_object_name_button);
 	lock_world_view_scale_button.not_toggle_color = { 204, 204, 204 };
 	lock_world_view_scale_button.toggle_color = { 91, 105, 233 };
+	lock_world_view_scale_button.toggle_function = std::bind(&Window::buttonFunc_lock_world_view_scale, this, std::placeholders::_1);
 
 	//init auto size button
 	auto_size_button.setFont(text_font);
@@ -239,6 +245,25 @@ void Window::create() {
 	auto_size_button.positionRight(lock_world_view_scale_button);
 	auto_size_button.not_click_color = { 204, 204, 204 };
 	auto_size_button.click_color = { 91, 105, 233 };
+	auto_size_button.push_function = std::bind(&Window::buttonFunc_auto_size, this);
+
+	//init make polygon button
+	make_polygon_button.setFont(text_font);
+	make_polygon_button.not_click_text = "Make\nPoly";
+	make_polygon_button.click_text = "Make\nPoly";
+	make_polygon_button.setArea(sf::IntRect(0, 0, 30, 30));
+	make_polygon_button.positionRight(auto_size_button);
+	make_polygon_button.not_click_color = { 204, 204, 204 };
+	make_polygon_button.click_color = { 91, 105, 233 };
+
+	//init make line button
+	make_line_button.setFont(text_font);
+	make_line_button.not_click_text = "Make\nLine";
+	make_line_button.click_text = "Make\nLine";
+	make_line_button.setArea(sf::IntRect(0, 0, 30, 30));
+	make_line_button.positionRight(make_polygon_button);
+	make_line_button.not_click_color = { 204, 204, 204 };
+	make_line_button.click_color = { 91, 105, 233 };
 
 	update_frame = true;
 }
@@ -247,6 +272,38 @@ void Window::create(sf::Vector2u win_size) {
 	window_size = win_size;
 	create();
 }
+
+void Window::buttonFunc_clear_draw_object() {
+	draw_object_vec_mutex.lock();
+	draw_object_vec.clear();
+	draw_object_vec_mutex.unlock();
+	update_frame = true;
+}
+void Window::buttonFunc_load_draw_object() {
+	loadShapeFromFile();
+	update_frame = true;
+}
+void Window::buttonFunc_save_draw_object() {
+	saveShapeToFile();
+	update_frame = true;
+}
+void Window::buttonFunc_show_draw_object_name(bool t) {
+	show_draw_object_name = t;
+	update_frame = true;
+}
+void Window::buttonFunc_lock_world_view_scale(bool t) {
+	lock_world_view_scale = t;
+	update_frame = true;
+}
+void Window::buttonFunc_mouse_move(bool t) {
+	mouse_move = t;
+	update_frame = true;
+}
+void Window::buttonFunc_auto_size() {
+	autoSize();
+	update_frame = true;
+}
+
 
 void Window::windowHandler() {
 	window_mutex.lock();
@@ -272,7 +329,7 @@ void Window::windowHandler() {
 				update_frame = true;
 				break;
 			case sf::Event::MouseWheelScrolled:
-				if (mouse_move_button.getState()) {
+				if (mouse_move) {
 					if (e.mouseWheelScroll.delta > 0.f) {
 						zoomViewAtPixel({ e.mouseWheelScroll.x, e.mouseWheelScroll.y }, world_view, window, 1.f / mouse_zoom_amount);
 					}
@@ -284,7 +341,7 @@ void Window::windowHandler() {
 				break;
 			case sf::Event::MouseMoved:
 				mouse_pos = { e.mouseMove.x, e.mouseMove.y };
-				if (mouse_move_button.getState()) {
+				if (mouse_move) {
 					if (mouse_left_bounce) {
 						mouse_current_pos = window.mapPixelToCoords(mouse_pos, world_view);
 						sf::Vector2f m = mouse_start_pos - mouse_current_pos;
@@ -305,22 +362,8 @@ void Window::windowHandler() {
 				auto_size_button.click(mouse_pos);
 				
 				mouse_left_down = true;
-				
-				if (clear_draw_object_vec_button.getState()) {
-					draw_object_vec_mutex.lock();
-					draw_object_vec.clear();
-					draw_object_vec_mutex.unlock();
-					update_frame = true;
-				}
-				if (load_draw_object_button.getState()) {
-					loadShapeFromFile();
-					update_frame = true;
-				}
-				if (save_draw_object_button.getState()) {
-					saveShapeToFile();
-					update_frame = true;
-				}
-				if (mouse_move_button.getState()) {
+
+				if (mouse_move) {
 					if (diagram_area.contains(static_cast<float>(mouse_pos.x), static_cast<float>(mouse_pos.y))) {
 						if (!mouse_left_bounce) {
 							mouse_start_pos = window.mapPixelToCoords(mouse_pos, world_view);
@@ -328,9 +371,7 @@ void Window::windowHandler() {
 						}
 					}
 				}
-				if (auto_size_button.getState()) {
-					autoSize();
-				}
+				
 				break;
 			case sf::Event::MouseButtonReleased:
 				mouse_pos = { e.mouseButton.x, e.mouseButton.y };
@@ -480,7 +521,7 @@ void Window::autoSize() {
 		}
 		wykobi::point2d<float> centre = wykobi::centroid(outer_rect);
 		wykobi::vector2d<float> size;
-		if (!lock_world_view_scale_button.getState()) {
+		if (!lock_world_view_scale) {
 			size = outer_rect[1] - outer_rect[0];
 		}
 		else {
@@ -535,7 +576,7 @@ void Window::loadShapeFromFile(std::string path) {
 		it = settings_map.find("type");
 		if (it != settings_map.end()) {
 			if (it->second == "polygon") {
-				draw_object_vec.push_back(std::unique_ptr<DrawObject>(new PolygonShape(settings_map)));
+				draw_object_vec.push_back	(std::unique_ptr<DrawObject>(new PolygonShape(settings_map)));
 			}
 			else if (it->second == "line") {
 				draw_object_vec.push_back(std::unique_ptr<DrawObject>(new LineShape(settings_map)));
@@ -731,7 +772,7 @@ void Window::renderDrawObject() {
 	draw_object_vec_mutex.unlock();
 	window.setView(world_view);
 	window.draw(draw_object_vertex_array);
-	if (show_draw_object_name_button.getState()) {
+	if (show_draw_object_name) {
 		//render object names
 		window.setView(screen_view);
 		draw_object_vec_mutex.lock();
@@ -865,10 +906,6 @@ void PolygonShape::appendVertex(sf::VertexArray & vertex_arr) {
 			}
 		}
 	}
-}
-
-DrawObject::DrawObject() {
-
 }
 
 DrawObject::DrawObject(std::unordered_map<std::string, std::string> & settings_map) {
