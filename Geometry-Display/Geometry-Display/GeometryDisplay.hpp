@@ -99,11 +99,6 @@ namespace GeometryDisplay {
 		virtual void release() = 0;
 
 		/*
-		Get current state of button
-		*/
-		//virtual bool getState() = 0;
-
-		/*
 		Set Button area
 		*/
 		void setArea(sf::IntRect button_area);
@@ -124,8 +119,8 @@ namespace GeometryDisplay {
 
 		std::function<void()> push_function;
 
-		std::string not_click_text = "button off";
-		std::string click_text = "button on";
+		std::string not_click_text;
+		std::string click_text;
 		sf::Color not_click_text_color;
 		sf::Color click_text_color;
 		sf::Color not_click_color;
@@ -133,19 +128,9 @@ namespace GeometryDisplay {
 		unsigned int text_char_size = 10;
 
 		/*
-		Override button, force click
-		*/
-		//void forcePush();
-
-		/*
-		
+		Click button
 		*/
 		void click(const sf::Vector2i & mouse_pos) override;
-
-		/*
-		Get state, will only return true once for each click
-		*/
-		//bool getState() override;
 
 		/*
 		Reset button when mouse button is released
@@ -161,8 +146,8 @@ namespace GeometryDisplay {
 	public:
 		std::function<void(bool)> toggle_function;
 
-		std::string not_toggle_text = "button off";
-		std::string toggle_text = "button on";
+		std::string not_toggle_text;
+		std::string toggle_text;
 		sf::Color not_toggle_text_color;
 		sf::Color toggle_text_color;
 		sf::Color not_toggle_color;
@@ -183,26 +168,13 @@ namespace GeometryDisplay {
 		Reset bounce of button
 		*/
 		void release() override;
-
-		/*
-		Get button state
-		false = not toggeled
-		true = toggeled
-		*/
-		//bool getState() override;
 	};
 
-	//class DrawObjectMaker {
-	//
-	//public:
-	//
-	//	enum State {
-	//
-	//	};
-	//
-	//	virtual void addPoint(sf::Vector2f point);
-	//
-	//};
+	class DrawObjectMaker : public sf::Drawable {
+	public:
+		virtual void addPoint(sf::Vector2f point) = 0;
+		virtual std::unique_ptr<DrawObject> finishObject() = 0;
+	};
 
 	class Window {
 	private:
@@ -347,7 +319,8 @@ namespace GeometryDisplay {
 		/*
 		Append shape to window
 		*/
-		void addShape(DrawObject & shape);
+		void addShape(DrawObject & shape);					//will clone shape
+		void addShape(std::unique_ptr<DrawObject> & ptr);	//will move ptr
 		void addShape(wykobi::polygon<float, 2> poly);
 		void addShape(wykobi::segment<float, 2> seg);
 

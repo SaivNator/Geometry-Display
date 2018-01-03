@@ -125,10 +125,6 @@ void ToggleButton::release() {
 	bounce = false;
 }
 
-//bool ToggleButton::getState() {
-//	return toggle;
-//}
-
 void ToggleButton::draw(sf::RenderTarget & target, sf::RenderStates states) const {
 	sf::VertexArray vertex_array(sf::Triangles);
 	sf::Text text;
@@ -304,7 +300,6 @@ void Window::buttonFunc_auto_size() {
 	update_frame = true;
 }
 
-
 void Window::windowHandler() {
 	window_mutex.lock();
 	window.create(sf::VideoMode(window_size.x, window_size.y), window_title, sf::Style::Resize | sf::Style::Resize | sf::Style::Titlebar | sf::Style::Close);
@@ -312,8 +307,8 @@ void Window::windowHandler() {
 	world_view = sf::View({ 0.f, 0.f, 100.f, 100.f });
 	updateView();
 	setViewPositionCorner(world_view, { 0.f, 0.f }, 0);
-
 	window_mutex.unlock();
+
 	while (running) {
 		window_mutex.lock();
 		//check input
@@ -427,15 +422,13 @@ void Window::windowHandler() {
 }
 
 void Window::setMouseMove(bool v) {
-	window_mutex.lock();
+	std::unique_lock<std::mutex> m_lock(window_mutex);
 	mouse_move_button.setToggle(v);
-	window_mutex.unlock();
 }
 
 void Window::setLockScreenScale(bool v) {
-	window_mutex.lock();
+	std::unique_lock<std::mutex> m_lock(window_mutex);
 	lock_world_view_scale_button.setToggle(v);
-	window_mutex.unlock();
 }
 
 void GeometryDisplay::zoomViewAtPixel(sf::Vector2i pixel, sf::View & view, sf::RenderWindow & window, float zoom) {
@@ -448,16 +441,15 @@ void GeometryDisplay::zoomViewAtPixel(sf::Vector2i pixel, sf::View & view, sf::R
 
 void Window::updateView() {
 	diagram_area.left = ui_border_thickness;
-diagram_area.top = ui_border_thickness;
-diagram_area.width = static_cast<float>(window_size.x) - ui_border_thickness * 2;
-diagram_area.height = static_cast<float>(window_size.y) - ui_border_thickness * 2;
-world_view.setViewport(sf::FloatRect(
-	normalize(diagram_area.left, 0.f, (float)window_size.x),
-	normalize(diagram_area.top, 0.f, (float)window_size.y),
-	normalize(diagram_area.width, 0.f, (float)window_size.x),
-	normalize(diagram_area.height, 0.f, (float)window_size.y)
-));
-//autoLineResolution();
+	diagram_area.top = ui_border_thickness;
+	diagram_area.width = static_cast<float>(window_size.x) - ui_border_thickness * 2;
+	diagram_area.height = static_cast<float>(window_size.y) - ui_border_thickness * 2;
+	world_view.setViewport(sf::FloatRect(
+		normalize(diagram_area.left, 0.f, (float)window_size.x),
+		normalize(diagram_area.top, 0.f, (float)window_size.y),
+		normalize(diagram_area.width, 0.f, (float)window_size.x),
+		normalize(diagram_area.height, 0.f, (float)window_size.y)
+	));
 }
 
 void Window::renderUI() {
@@ -490,14 +482,6 @@ void Window::renderUI() {
 	window.setView(screen_view);
 	window.draw(ui_vertex_array);
 }
-
-//void Window::autoLineResolution() {
-//	sf::Vector2f v0 = window.mapPixelToCoords({ 0, 0 }, world_view);
-//	sf::Vector2f v1 = window.mapPixelToCoords(line_screen_distance, world_view);
-//	sf::Vector2f v_dist = v1 - v0;
-//	diagram_line_resolution.x = v_dist.x;//std::round(v_dist.x);
-//	diagram_line_resolution.y = v_dist.y;// std::round(v_dist.y);
-//}
 
 void Window::autoSize() {
 	draw_object_vec_mutex.lock();
@@ -764,18 +748,16 @@ void Window::renderLines() {
 
 void Window::renderDrawObject() {
 	//render shapes
-	draw_object_vec_mutex.lock();
+	std::unique_lock<std::mutex> m_lock(draw_object_vec_mutex);
 	draw_object_vertex_array.clear();
 	for (auto it = draw_object_vec.begin(); it != draw_object_vec.end(); ++it) {
 		(*it)->appendVertex(draw_object_vertex_array);
 	}
-	draw_object_vec_mutex.unlock();
 	window.setView(world_view);
 	window.draw(draw_object_vertex_array);
 	if (show_draw_object_name) {
 		//render object names
 		window.setView(screen_view);
-		draw_object_vec_mutex.lock();
 		for (auto it = draw_object_vec.begin(); it != draw_object_vec.end(); ++it) {
 			if (!(*it)->name.empty()) {
 				sf::Text t;
@@ -787,50 +769,49 @@ void Window::renderDrawObject() {
 				window.draw(t);
 			}
 		}
-		draw_object_vec_mutex.unlock();
 	}
 }
 
 void Window::setTitle(std::string title) {
-	window_mutex.lock();
+	std::unique_lock<std::mutex> m_lock(window_mutex);
 	window_title = title;
 	update_frame = true;
-	window_mutex.unlock();
 }
 
 void Window::setUpdateInterval(int t) {
-	window_mutex.lock();
+	std::unique_lock<std::mutex> m_lock(window_mutex);
 	update_interval = t;
-	window_mutex.unlock();
 }
 
 void Window::setWindowSize(int w, int h) {
-	window_mutex.lock();
+	std::unique_lock<std::mutex> m_lock(window_mutex);
 	window_size = { static_cast<unsigned int>(w), static_cast<unsigned int>(h) };
 	update_frame = true;
-	window_mutex.unlock();
 }
 
 void Window::setDiagramPosition(float x, float y) {
-	window_mutex.lock();
+	std::unique_lock<std::mutex> m_lock(window_mutex);
 	world_view.setCenter(x + world_view.getSize().x / 2, y + world_view.getSize().y / 2);
 	update_frame = true;
-	window_mutex.unlock();
 }
 
 void Window::setDiagramLineResolution(float x, float y) {
-	window_mutex.lock();
+	std::unique_lock<std::mutex> m_lock(window_mutex);
 	diagram_line_resolution.x = x;
 	diagram_line_resolution.y = y;
 	update_frame = true;
-	window_mutex.unlock();
 }
 
 void Window::addShape(DrawObject & shape) {
-	draw_object_vec_mutex.lock();
+	std::unique_lock<std::mutex> m_lock(draw_object_vec_mutex);
 	draw_object_vec.push_back(std::unique_ptr<DrawObject>(shape.clone()));
 	update_frame = true;
-	draw_object_vec_mutex.unlock();
+}
+
+void Window::addShape(std::unique_ptr<DrawObject> & ptr) {
+	std::unique_lock<std::mutex> m_lock(draw_object_vec_mutex);
+	draw_object_vec.push_back(std::move(ptr));
+	update_frame = true;
 }
 
 void Window::addShape(wykobi::polygon<float, 2> poly) {
@@ -848,6 +829,7 @@ sf::Vector2u Window::getWindowSize() {
 }
 
 void Window::clearShapeVec() {
+	std::unique_lock<std::mutex> m_lock(draw_object_vec_mutex);
 	draw_object_vec.clear();
 	update_frame = true;
 }
