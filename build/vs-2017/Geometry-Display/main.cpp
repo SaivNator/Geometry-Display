@@ -12,6 +12,13 @@
 int main() {
 
 	sf::RenderWindow window;
+	
+
+
+
+
+
+
 
 	window.create(sf::VideoMode(500, 500), "TEST", sf::Style::Resize | sf::Style::Resize | sf::Style::Titlebar | sf::Style::Close);
 
