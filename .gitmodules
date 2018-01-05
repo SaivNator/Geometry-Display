@@ -1,3 +1,9 @@
 [submodule "lib/nativefiledialog"]
 	path = lib/nativefiledialog
 	url = https://github.com/mlabbe/nativefiledialog.git
+[submodule "lib/wykobi"]
+	path = lib/wykobi
+	url = https://github.com/ArashPartow/wykobi.git
+[submodule "lib/SFML"]
+	path = lib/SFML
+	url = https://github.com/SFML/SFML.git
