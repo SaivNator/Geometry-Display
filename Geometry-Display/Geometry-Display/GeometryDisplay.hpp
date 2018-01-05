@@ -170,10 +170,29 @@ namespace GeometryDisplay {
 		void release() override;
 	};
 
-	class DrawObjectMaker : public sf::Drawable {
+	class PolygonShapeMaker : public sf::Drawable {
+	private:
+		std::unique_ptr<PolygonShape> polygon_shape;
+	
+		virtual void draw(sf::RenderTarget & target, sf::RenderStates states) const;
 	public:
-		virtual void addPoint(sf::Vector2f point) = 0;
-		virtual std::unique_ptr<DrawObject> finishObject() = 0;
+		/*
+		Add point to Shape
+		return:
+			true if point is legal
+			false if point is illegal
+		*/
+		bool addPoint(sf::Vector2f point);
+		
+		std::unique_ptr<PolygonShape> & getShape();
+
+	};
+	class LineShapeMaker : public sf::Drawable {
+		std::unique_ptr<LineShape> line_shape;
+	private:
+
+	public:
+
 	};
 
 	class Window {

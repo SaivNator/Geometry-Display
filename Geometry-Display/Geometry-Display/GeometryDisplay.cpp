@@ -40,32 +40,15 @@ void Button::setArea(sf::IntRect button_area) {
 	area = button_area;
 }
 
-//void PushButton::forcePush() {
-//	force_push = true;
-//}
-
 void PushButton::click(const sf::Vector2i & mouse_pos) {
 	if (!bounce) {
 		if (area.contains(mouse_pos)) {
 			is_clicked = true;
+			bounce = true;
 			push_function();
 		}
 	}
 }
-
-//bool PushButton::getState() {
-//	if (force_push) {
-//		force_push = false;
-//		return true;
-//	}
-//	else if (is_clicked && !bounce) {
-//		bounce = true;
-//		return true;
-//	}
-//	else {
-//		return false;
-//	}
-//}
 
 void PushButton::release() {
 	is_clicked = false;
@@ -172,8 +155,6 @@ Window::Window() {
 }
 
 void Window::create() {
-	window_thread = std::thread(&Window::windowHandler, this);
-
 	//init new button
 	clear_draw_object_vec_button.setFont(text_font);
 	clear_draw_object_vec_button.not_click_text = "New";
@@ -260,6 +241,9 @@ void Window::create() {
 	make_line_button.positionRight(make_polygon_button);
 	make_line_button.not_click_color = { 204, 204, 204 };
 	make_line_button.click_color = { 91, 105, 233 };
+
+	//start window_thread
+	window_thread = std::thread(&Window::windowHandler, this);
 
 	update_frame = true;
 }
