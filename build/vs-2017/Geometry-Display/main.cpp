@@ -1,6 +1,9 @@
 //TEST MAIN
 
 #include <iostream>
+#include <string>
+
+#include <SFML\Graphics.hpp>
 
 #include <wykobi.hpp>
 
@@ -8,6 +11,9 @@
 
 int main() {
 
+	sf::RenderWindow window;
+
+	window.create(sf::VideoMode(500, 500), "TEST", sf::Style::Resize | sf::Style::Resize | sf::Style::Titlebar | sf::Style::Close);
 
 	wykobi::point2d<float> p1 = wykobi::make_point(100.f, 200.f);
 

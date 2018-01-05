@@ -1,0 +1,11 @@
+# CMake generation dependency list for this directory.
+C:/Users/Sivert/Documents/GitHub/Geometry-Display/lib/SFML/src/SFML/Audio/CMakeLists.txt
+C:/Program Files/CMake/share/cmake-3.10/Modules/FindOpenAL.cmake
+C:/Program Files/CMake/share/cmake-3.10/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files/CMake/share/cmake-3.10/Modules/FindPackageMessage.cmake
+C:/Users/Sivert/Documents/GitHub/Geometry-Display/lib/SFML/cmake/Modules/FindVorbis.cmake
+C:/Program Files/CMake/share/cmake-3.10/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files/CMake/share/cmake-3.10/Modules/FindPackageMessage.cmake
+C:/Users/Sivert/Documents/GitHub/Geometry-Display/lib/SFML/cmake/Modules/FindFLAC.cmake
+C:/Program Files/CMake/share/cmake-3.10/Modules/FindPackageHandleStandardArgs.cmake
+C:/Program Files/CMake/share/cmake-3.10/Modules/FindPackageMessage.cmake
