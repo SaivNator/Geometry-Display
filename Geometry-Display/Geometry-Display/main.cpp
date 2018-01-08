@@ -23,7 +23,7 @@ int main() {
 		return EXIT_FAILURE;
 	}
 
-	GeometryDisplay::Window w;
+	GeometryDisplay::Window w(arial);
 	
 	w.create({ 1000, 600 });
 	w.setMouseMove(true);

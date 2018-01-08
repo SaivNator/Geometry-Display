@@ -172,20 +172,34 @@ namespace GeometryDisplay {
 
 	class PolygonShapeMaker : public sf::Drawable {
 	private:
-		std::unique_ptr<PolygonShape> polygon_shape;
-	
+		wykobi::polygon<float, 2> m_polygon;
+
+		sf::View & m_screen_view;
+		sf::View & m_world_view;
+
 		virtual void draw(sf::RenderTarget & target, sf::RenderStates states) const;
 	public:
+
+		sf::Color m_draw_point_color = sf::Color::Red;
+		sf::Color m_draw_line_color = sf::Color::Black;
+
 		/*
-		Add point to Shape
+		Constructor
+		*/
+		PolygonShapeMaker(sf::View & screen_view, sf::View & world_view);
+
+		/*
+		Add vertex to Shape
 		return:
 			true if point is legal
 			false if point is illegal
 		*/
 		bool addPoint(sf::Vector2f point);
 		
-		std::unique_ptr<PolygonShape> & getShape();
-
+		/*
+		
+		*/
+		//std::unique_ptr<PolygonShape> & getShape();
 	};
 	class LineShapeMaker : public sf::Drawable {
 		std::unique_ptr<LineShape> line_shape;
@@ -252,6 +266,10 @@ namespace GeometryDisplay {
 		//lock scale
 		bool lock_world_view_scale = false;
 
+		//make polygon mode
+		bool m_make_polygon_mode = true;
+		PolygonShapeMaker m_polygon_shape_maker;
+
 		//Buttons
 		PushButton clear_draw_object_vec_button;
 		PushButton load_draw_object_button;
@@ -262,6 +280,7 @@ namespace GeometryDisplay {
 		PushButton auto_size_button;
 		PushButton make_polygon_button;
 		PushButton make_line_button;
+
 
 		/*
 		Button member functions
@@ -313,9 +332,10 @@ namespace GeometryDisplay {
 		*/
 		//void autoLineResolution();
 		
-	public:
 		Window();
+	public:
 		Window(std::shared_ptr<sf::Font> font_ptr);							//constructor
+		Window(std::string font_path);
 
 		/*
 		Init display
@@ -342,6 +362,16 @@ namespace GeometryDisplay {
 		void addShape(std::unique_ptr<DrawObject> & ptr);	//will move ptr
 		void addShape(wykobi::polygon<float, 2> poly);
 		void addShape(wykobi::segment<float, 2> seg);
+
+		/*
+		Get screen view
+		*/
+		sf::View getScreenView();
+
+		/*
+		Get world view
+		*/
+		sf::View getWorldView();
 
 		/*
 		Clear shapes from window
@@ -422,6 +452,12 @@ namespace GeometryDisplay {
 	*/
 	std::vector<wykobi::triangle<float, 2>> makeTriangleLine(float x0, float y0, float x1, float y1, float thickness);
 	std::vector<wykobi::triangle<float, 2>> makeTriangleLine(wykobi::segment<float, 2> & seg, float thickness);
+
+	/*
+	Make triangles representing point with radius
+	*/
+	std::vector<wykobi::triangle<float, 2>> makeTrianglePoint(float x, float y, float radius, std::size_t point_count);
+	std::vector<wykobi::triangle<float, 2>> makeTrianglePoint(wykobi::point2d<float> point, float radius, std::size_t point_count);
 
 	/*
 	Floor point to closest resolution

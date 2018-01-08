@@ -4,6 +4,90 @@
 
 using namespace GeometryDisplay;
 
+std::vector<wykobi::triangle<float, 2>> GeometryDisplay::makeTrianglePoint(float x, float y, float radius, std::size_t point_count) {
+	std::vector<wykobi::triangle<float, 2>> triangle_vec;
+	wykobi::polygon<float, 2> poly = wykobi::make_polygon(wykobi::make_circle(x, y, radius), point_count);
+	wykobi::algorithm::polygon_triangulate<wykobi::point2d<float>>(poly, std::back_inserter(triangle_vec));
+	return triangle_vec;
+}
+std::vector<wykobi::triangle<float, 2>> GeometryDisplay::makeTrianglePoint(wykobi::point2d<float> point, float radius, std::size_t point_count) {
+	return makeTrianglePoint(point.x, point.y, radius, point_count);
+}
+
+PolygonShapeMaker::PolygonShapeMaker(sf::View & screen_view, sf::View & world_view)	: 
+	m_screen_view(screen_view),
+	m_world_view(world_view)
+{
+}
+
+bool PolygonShapeMaker::addPoint(sf::Vector2f point) {
+	wykobi::point2d<float> w_point = wykobi::make_point<float>(point.x, point.y);
+
+	std::cout << w_point.x << "\t" << w_point.y << "\n";
+	if (m_polygon.size() > 0) {
+		//Check if point is legal
+		//if new segment is intersecting existing segments or point == existing point then it is illegal
+		for (std::size_t i = 0; i < m_polygon.size(); ++i) {
+			if (w_point == m_polygon[i]) {
+				return false;
+			}
+		}
+		wykobi::segment<float, 2> test_segment = wykobi::make_segment(m_polygon.back(), w_point);
+		for (std::size_t i = 0; i < m_polygon.size() - 1; ++i) {
+			wykobi::segment<float, 2> temp_segment = wykobi::edge(m_polygon, i);
+			if (wykobi::intersect(test_segment, temp_segment)) {
+				return false;
+			}
+		}
+	}
+	m_polygon.push_back(w_point);
+	return true;
+}
+
+void PolygonShapeMaker::draw(sf::RenderTarget & target, sf::RenderStates states) const {
+	sf::VertexArray vertex_array(sf::Triangles);
+	if (m_polygon.size() > 1) {
+		for (std::size_t i = 0; i < m_polygon.size() - 1; ++i) {
+			wykobi::segment<float, 2> segment = wykobi::edge(m_polygon, i);
+			sf::Vector2f p0(target.mapCoordsToPixel({ segment[0].x, segment[0].y }, m_world_view));
+			sf::Vector2f p1(target.mapCoordsToPixel({ segment[1].x, segment[1].y }, m_world_view));
+			segment[0] = wykobi::make_point(p0.x, p0.y);
+			segment[1] = wykobi::make_point(p1.x, p1.y);
+			for (wykobi::triangle<float, 2> tri : makeTriangleLine(segment, 2.f)) {
+				for (std::size_t j = 0; j < tri.size(); ++j) {
+					sf::Vertex vertex;
+					vertex.position = { tri[j].x, tri[j].y };
+					vertex.color = m_draw_line_color;
+					vertex_array.append(vertex);
+				}
+			}
+		}
+	}
+
+	for (std::size_t i = 0; i < m_polygon.size(); ++i) {
+		sf::Vector2f p(target.mapCoordsToPixel({ m_polygon[i].x, m_polygon[i].y }, m_world_view));
+		for (wykobi::triangle<float, 2> tri : makeTrianglePoint(p.x, p.y, 5.f, 10)) {
+			for (std::size_t j = 0; j < tri.size(); ++j) {
+				sf::Vertex vertex;
+				vertex.position = sf::Vector2f(tri[j].x, tri[j].y);
+				vertex.color = m_draw_point_color;
+				vertex_array.append(vertex);
+			}
+		}
+	}
+
+	target.setView(m_screen_view);
+	target.draw(vertex_array, states);
+}
+
+sf::View Window::getScreenView() {
+	return screen_view;
+}
+
+sf::View Window::getWorldView() {
+	return world_view;
+}
+
 void UIPosition::positionOver(UIPosition & parent) {
 	this->area.left = parent.area.left;
 	this->area.top = parent.area.top - this->area.height;
@@ -143,13 +227,22 @@ void ToggleButton::draw(sf::RenderTarget & target, sf::RenderStates states) cons
 	target.draw(text, states);
 }
 
-Window::Window(std::shared_ptr<sf::Font> font_ptr) {
+Window::Window() :
+	m_polygon_shape_maker(screen_view, world_view)
+{
+}
+
+Window::Window(std::shared_ptr<sf::Font> font_ptr) :
+	Window()
+{
 	text_font = font_ptr;
 }
 
-Window::Window() { 
+Window::Window(std::string font_path) :
+	Window()
+{ 
 	text_font = std::shared_ptr<sf::Font>(new sf::Font());
-	if (!text_font->loadFromFile("fonts/arial.ttf")) {
+	if (!text_font->loadFromFile(font_path)) {
 		std::cout << "Font load failed\n";
 	}
 }
@@ -330,27 +423,44 @@ void Window::windowHandler() {
 				}
 				break;
 			case sf::Event::MouseButtonPressed:
-				mouse_pos = { e.mouseButton.x, e.mouseButton.y };
-				
-				clear_draw_object_vec_button.click(mouse_pos);
-				load_draw_object_button.click(mouse_pos);
-				save_draw_object_button.click(mouse_pos);
-				mouse_move_button.click(mouse_pos);
-				show_draw_object_name_button.click(mouse_pos);
-				lock_world_view_scale_button.click(mouse_pos);
-				auto_size_button.click(mouse_pos);
-				
-				mouse_left_down = true;
-
-				if (mouse_move) {
-					if (diagram_area.contains(static_cast<float>(mouse_pos.x), static_cast<float>(mouse_pos.y))) {
-						if (!mouse_left_bounce) {
-							mouse_start_pos = window.mapPixelToCoords(mouse_pos, world_view);
-							mouse_left_bounce = true;
+				mouse_pos = { e.mouseButton.x, e.mouseButton.y };				
+				switch (e.mouseButton.button)
+				{
+				case sf::Mouse::Left:
+					clear_draw_object_vec_button.click(mouse_pos);
+					load_draw_object_button.click(mouse_pos);
+					save_draw_object_button.click(mouse_pos);
+					mouse_move_button.click(mouse_pos);
+					show_draw_object_name_button.click(mouse_pos);
+					lock_world_view_scale_button.click(mouse_pos);
+					auto_size_button.click(mouse_pos);
+					mouse_left_down = true;
+					if (mouse_move) {
+						if (diagram_area.contains(static_cast<float>(mouse_pos.x), static_cast<float>(mouse_pos.y))) {
+							if (!mouse_left_bounce) {
+								mouse_start_pos = window.mapPixelToCoords(mouse_pos, world_view);
+								mouse_left_bounce = true;
+							}
 						}
 					}
+
+					
+
+					break;
+				case sf::Mouse::Right:
+
+					if (m_make_polygon_mode) {
+						bool v = m_polygon_shape_maker.addPoint(window.mapPixelToCoords(mouse_pos, world_view));
+					
+						std::cout << "Add point: " << v << "\n";
+
+					}
+
+
+					break;
+				default:
+					break;
 				}
-				
 				break;
 			case sf::Event::MouseButtonReleased:
 				mouse_pos = { e.mouseButton.x, e.mouseButton.y };
@@ -379,6 +489,10 @@ void Window::windowHandler() {
 
 			updateView();
 
+			if (m_make_polygon_mode) {
+				window.draw(m_polygon_shape_maker);
+			}
+
 			renderUI();
 
 			renderLines();
@@ -394,6 +508,8 @@ void Window::windowHandler() {
 			window.draw(show_draw_object_name_button);
 			window.draw(lock_world_view_scale_button);
 			window.draw(auto_size_button);
+
+		
 			
 			window.display();
 			update_frame = false;
