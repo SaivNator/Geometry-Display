@@ -174,6 +174,8 @@ namespace GeometryDisplay {
 	private:
 		wykobi::polygon<float, 2> m_polygon;
 
+		bool m_finished = false;
+
 		const sf::View & m_screen_view;
 		const sf::View & m_world_view;
 
@@ -274,7 +276,7 @@ namespace GeometryDisplay {
 		bool lock_world_view_scale = false;
 
 		//make polygon mode
-		bool m_make_polygon_mode = true;
+		bool m_make_polygon_mode = false;
 		PolygonShapeMaker m_polygon_shape_maker;
 
 		//Buttons
@@ -298,7 +300,7 @@ namespace GeometryDisplay {
 		void buttonFunc_lock_world_view_scale(bool t);
 		void buttonFunc_mouse_move(bool t);
 		void buttonFunc_auto_size();
-		//void buttonFunc_make_polygon();
+		void buttonFunc_make_polygon();
 		//void buttonFunc_make_line();
 
 		/*

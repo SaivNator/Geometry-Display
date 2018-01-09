@@ -20,7 +20,32 @@ PolygonShapeMaker::PolygonShapeMaker(sf::View & screen_view, sf::View & world_vi
 {
 }
 
+PolygonShape PolygonShapeMaker::retrivePolygonShape() {
+	PolygonShape poly(m_polygon);
+	m_polygon.clear();
+	m_finished = false;
+	return poly;
+}
+
+bool PolygonShapeMaker::finishPolygon() {
+	if (m_polygon.size() < 3) {
+		return false;
+	}
+	wykobi::segment<float, 2> last_segment = wykobi::edge(m_polygon, m_polygon.size() - 1);
+	for (std::size_t i = 1; i < m_polygon.size() - 2; ++i) {
+		wykobi::segment<float, 2> temp_segment = wykobi::edge(m_polygon, i);
+		if (wykobi::intersect(last_segment, temp_segment)) {
+			return false;
+		}
+	}
+	m_finished = true;
+	return true;
+}
+
 bool PolygonShapeMaker::addPoint(sf::Vector2f point) {
+	if (m_finished) {
+		return false;
+	}
 	wykobi::point2d<float> w_point = wykobi::make_point<float>(point.x, point.y);
 	if (m_polygon.size() > 0) {
 		//Check if point is legal
@@ -336,6 +361,7 @@ void Window::create() {
 	make_polygon_button.positionRight(auto_size_button);
 	make_polygon_button.not_click_color = { 204, 204, 204 };
 	make_polygon_button.click_color = { 91, 105, 233 };
+	make_polygon_button.push_function = std::bind(&Window::buttonFunc_make_polygon, this);
 
 	//init make line button
 	make_line_button.setFont(text_font);
@@ -386,6 +412,18 @@ void Window::buttonFunc_mouse_move(bool t) {
 void Window::buttonFunc_auto_size() {
 	autoSize();
 	update_frame = true;
+}
+void Window::buttonFunc_make_polygon() {
+	if (!m_make_polygon_mode) {
+		m_make_polygon_mode = true;
+	}
+	else {
+		if (m_polygon_shape_maker.finishPolygon()) {
+			m_make_polygon_mode = false;
+			PolygonShape shape = m_polygon_shape_maker.retrivePolygonShape();
+			addShape(shape);
+		}
+	}
 }
 
 void Window::windowHandler() {
@@ -445,6 +483,7 @@ void Window::windowHandler() {
 					show_draw_object_name_button.click(mouse_pos);
 					lock_world_view_scale_button.click(mouse_pos);
 					auto_size_button.click(mouse_pos);
+					make_polygon_button.click(mouse_pos);
 					mouse_left_down = true;
 					if (mouse_move) {
 						if (diagram_area.contains(static_cast<float>(mouse_pos.x), static_cast<float>(mouse_pos.y))) {
@@ -454,9 +493,6 @@ void Window::windowHandler() {
 							}
 						}
 					}
-
-					
-
 					break;
 				case sf::Mouse::Right:
 
@@ -482,6 +518,7 @@ void Window::windowHandler() {
 				show_draw_object_name_button.release();
 				lock_world_view_scale_button.release();
 				auto_size_button.release();
+				make_polygon_button.release();
 				update_frame = true;
 				break;
 			default:
@@ -517,9 +554,8 @@ void Window::windowHandler() {
 			window.draw(show_draw_object_name_button);
 			window.draw(lock_world_view_scale_button);
 			window.draw(auto_size_button);
+			window.draw(make_polygon_button);
 
-		
-			
 			window.display();
 			update_frame = false;
 		}
@@ -593,14 +629,17 @@ void Window::renderUI() {
 }
 
 void Window::autoLineResolution() {
-	float x = world_view.getSize().x / 10;
-	//float y = world_view.getSize().y / 10;
-
-	x = std::pow(std::floor(std::log2(x)), 2);
-	//y = std::pow(std::floor(std::log2(y)), 2);
-
-	diagram_line_resolution.x = x;
-	diagram_line_resolution.y = x;
+	//float x = world_view.getSize().x / 10;
+	//
+	////while (x < )
+	//
+	////float y = world_view.getSize().y / 10;
+	//
+	//x = std::pow(std::floor(std::log2(x)), 2);
+	////y = std::pow(std::floor(std::log2(y)), 2);
+	//
+	//diagram_line_resolution.x = x;
+	//diagram_line_resolution.y = x;
 }
 
 void Window::autoSize() {
