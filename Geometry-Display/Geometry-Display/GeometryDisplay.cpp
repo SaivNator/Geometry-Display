@@ -46,23 +46,20 @@ bool PolygonShapeMaker::addPoint(sf::Vector2f point) {
 
 void PolygonShapeMaker::draw(sf::RenderTarget & target, sf::RenderStates states) const {
 	sf::VertexArray vertex_array(sf::Triangles);
+	const float max_screen_width = m_screen_view.getSize().x * 2;
+	const float max_screen_height = m_screen_view.getSize().y * 2;
 	if (m_polygon.size() > 1) {
 		for (std::size_t i = 0; i < m_polygon.size() - 1; ++i) {
 			wykobi::segment<float, 2> segment = wykobi::edge(m_polygon, i);
 			sf::Vector2f p0(target.mapCoordsToPixel({ segment[0].x, segment[0].y }, m_world_view));
 			sf::Vector2f p1(target.mapCoordsToPixel({ segment[1].x, segment[1].y }, m_world_view));
-
-			if (p0.x > m_screen_view.getSize().x * 2 || p0.x < -(m_screen_view.getSize().x * 2)) continue;
-			if (p0.y > m_screen_view.getSize().y * 2 || p0.y < -(m_screen_view.getSize().y * 2)) continue;
-			if (p1.x > m_screen_view.getSize().x * 2 || p1.x < -(m_screen_view.getSize().x * 2)) continue;
-			if (p1.y > m_screen_view.getSize().y * 2 || p1.y < -(m_screen_view.getSize().y * 2)) continue;
-
+			if (p0.x > max_screen_width || p0.x < -max_screen_width) continue;
+			if (p0.y > max_screen_height || p0.y < -max_screen_height) continue;
+			if (p1.x > max_screen_width || p1.x < -max_screen_width) continue;
+			if (p1.y > max_screen_height || p1.y < -max_screen_height) continue;
 			segment[0] = wykobi::make_point(p0.x, p0.y);
 			segment[1] = wykobi::make_point(p1.x, p1.y);
-			if (segment[0] == segment[1]) {
-				//if this then there is no reason to draw
-				return;
-			}
+			if (segment[0] == segment[1]) continue;
 			for (wykobi::triangle<float, 2> tri : makeTriangleLine(segment, 2.f)) {
 				std::vector<sf::Vertex> tri_vertex(3);
 				for (std::size_t j = 0; j < tri.size(); ++j) {
@@ -77,10 +74,8 @@ void PolygonShapeMaker::draw(sf::RenderTarget & target, sf::RenderStates states)
 	}
 	for (std::size_t i = 0; i < m_polygon.size(); ++i) {
 		sf::Vector2f p(target.mapCoordsToPixel({ m_polygon[i].x, m_polygon[i].y }, m_world_view));
-
-		if (p.x > m_screen_view.getSize().x * 2 || p.x < -(m_screen_view.getSize().x * 2)) continue;
-		if (p.y > m_screen_view.getSize().y * 2 || p.y < -(m_screen_view.getSize().y * 2)) continue;
-
+		if (p.x > max_screen_width || p.x < -max_screen_width) continue;
+		if (p.y > max_screen_height || p.y < -max_screen_height) continue;
 		for (wykobi::triangle<float, 2> tri : makeTrianglePoint(p.x, p.y, 5.f, 10)) {
 			std::vector<sf::Vertex> tri_vertex(3);
 			for (std::size_t j = 0; j < tri.size(); ++j) {
@@ -597,6 +592,17 @@ void Window::renderUI() {
 	window.draw(ui_vertex_array);
 }
 
+void Window::autoLineResolution() {
+	float x = world_view.getSize().x / 10;
+	//float y = world_view.getSize().y / 10;
+
+	x = std::pow(std::floor(std::log2(x)), 2);
+	//y = std::pow(std::floor(std::log2(y)), 2);
+
+	diagram_line_resolution.x = x;
+	diagram_line_resolution.y = x;
+}
+
 void Window::autoSize() {
 	draw_object_vec_mutex.lock();
 	if (!draw_object_vec.empty()) {
@@ -741,6 +747,8 @@ void Window::renderLines() {
 	diagram_vertex_array.clear();
 	diagram_text_vector.clear();
 	
+	autoLineResolution();
+
 	wykobi::polygon<float, 2> world_poly(4);
 	sf::Vector2f p;
 	p = window.mapPixelToCoords(sf::Vector2i((int)diagram_area.left, (int)diagram_area.top), world_view);

@@ -174,8 +174,8 @@ namespace GeometryDisplay {
 	private:
 		wykobi::polygon<float, 2> m_polygon;
 
-		sf::View & m_screen_view;
-		sf::View & m_world_view;
+		const sf::View & m_screen_view;
+		const sf::View & m_world_view;
 
 		virtual void draw(sf::RenderTarget & target, sf::RenderStates states) const;
 	public:
@@ -197,9 +197,17 @@ namespace GeometryDisplay {
 		bool addPoint(sf::Vector2f point);
 		
 		/*
-		
+		Finish polygon
+		return:
+			true if finish is legal
+			false if finish is illegal
 		*/
-		//std::unique_ptr<PolygonShape> & getShape();
+		bool finishPolygon();
+
+		/*
+		Retrive PolygonShape and reset PolygonShapeMaker
+		*/
+		PolygonShape retrivePolygonShape();
 	};
 	class LineShapeMaker : public sf::Drawable {
 		std::unique_ptr<LineShape> line_shape;
@@ -246,8 +254,7 @@ namespace GeometryDisplay {
 		sf::View world_view;	
 		sf::FloatRect diagram_area;
 		wykobi::vector2d<float> diagram_line_resolution = wykobi::make_vector<float>(50.f, 50.f);
-		sf::Vector2i line_screen_distance = { 50, 50 };
-		float diagram_line_thickness = 2.f;
+		//sf::Vector2i line_screen_distance = { 50, 50 };
 		sf::Color diagram_line_color = { 0, 0, 255, 255 / 2 };
 
 		//mouse move
@@ -280,7 +287,6 @@ namespace GeometryDisplay {
 		PushButton auto_size_button;
 		PushButton make_polygon_button;
 		PushButton make_line_button;
-
 
 		/*
 		Button member functions
@@ -330,7 +336,7 @@ namespace GeometryDisplay {
 		/*
 		Auto line resolution
 		*/
-		//void autoLineResolution();
+		void autoLineResolution();
 		
 		Window();
 	public:
