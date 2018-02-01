@@ -1,0 +1,5 @@
+type=polygon outer_line=1 outer_line_thickness=2 inner_fill=1 line_color=ffffffff polygon=(20,80)(0,0)(20,380)(20,320)(80,320)(80,380)(0,400)(380,380)(320,380)(320,320)(380,320)(400,400)(380,20)(380,80)(320,80)(320,20)(400,0)(20,20)(80,20)(80,80)
+type=polygon outer_line=1 outer_line_thickness=2 inner_fill=1 line_color=ffffffff polygon=(20,80)(0,0)(400,0)(20,20)
+type=polygon outer_line=1 outer_line_thickness=2 inner_fill=1 line_color=ffffffff polygon=(80,380)(0,400)(0,0)(20,380)
+type=polygon outer_line=1 outer_line_thickness=2 inner_fill=1 line_color=ffffffff polygon=(380,320)(400,400)(0,400)(380,380)
+type=polygon outer_line=1 outer_line_thickness=2 inner_fill=1 line_color=ffffffff polygon=(320,20)(400,0)(400,400)(380,20)
