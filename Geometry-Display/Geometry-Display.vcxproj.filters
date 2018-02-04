@@ -30,6 +30,9 @@
     <ClCompile Include="TextBox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Box.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FileDialog.hpp">
@@ -46,6 +49,9 @@
     </ClInclude>
     <ClInclude Include="TextBox.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Box.hpp">
+      <Filter>Header Files\GUI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

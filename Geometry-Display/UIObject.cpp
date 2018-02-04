@@ -23,15 +23,15 @@ namespace GUI {
 	}
 
 	void UIObject::setShow(bool v) {
-		m_isShow = v;
+		m_is_show = v;
 	}
 
 	void UIObject::setResizeable(bool v) {
-		m_isResizeable = v;
+		m_is_resizeable = v;
 	}
 
 	void UIObject::setMoveable(bool v) {
-		m_isMoveable = v;
+		m_is_moveable = v;
 	}
 
 	void UIObject::resize(wykobi::vector2d<int> vec) {
@@ -55,9 +55,11 @@ namespace GUI {
 	}
 
 	void UIObject::draw() {
-		if (!m_children.empty()) {
-			for (auto & child : m_children) {
-				child.draw();
+		if (m_is_show) {
+			if (!m_children.empty()) {
+				for (auto & child : m_children) {
+					child.draw();
+				}
 			}
 		}
 	}

@@ -4,10 +4,10 @@
 #ifndef TextBox_HEADER
 #define TextBox_HEADER
 
-#include "UIObject.hpp"
+#include "Box.hpp"
 
 namespace GUI {
-	class TextBox : public UIObject {
+	class TextBox : public Box {
 	public:
 		/*
 		Constructor
@@ -30,20 +30,24 @@ namespace GUI {
 		virtual void setCharacterSize(int size);
 
 		/*
-		Auto size bounding box accoring to string and charactersize
+		Set text color
+		*/
+		virtual void setTextColor(sf::Color color);
+
+		/*
+		Auto size bounding box according to string and charactersize
 		*/
 		virtual void autoSize();
-
+		
 		/*
 		Draw
 		*/
 		virtual void draw();
 
 	protected:
-		sf::Text m_sf_text;
-		sf::Color m_color;
-		std::string m_string;
 		std::shared_ptr<sf::Font> m_font;
+	private:
+		sf::Text m_sf_text;
 	};
 
 }

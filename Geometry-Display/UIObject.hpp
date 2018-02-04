@@ -76,9 +76,9 @@ namespace GUI {
 		sf::RenderWindow & m_window;
 		std::vector<UIObject> m_children;
 		UIRectangle m_bounding_rect;
-		bool m_isShow = true;
-		bool m_isResizeable = false;
-		bool m_isMoveable = false;
+		bool m_is_show = true;
+		bool m_is_resizeable = false;
+		bool m_is_moveable = false;
 	};
 
 }
