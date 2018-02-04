@@ -21,9 +21,15 @@
   <ItemGroup>
     <ClCompile Include="FileDialog.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="TextBox.cpp" />
+    <ClCompile Include="UIObject.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Button.hpp" />
     <ClInclude Include="FileDialog.hpp" />
+    <ClInclude Include="TextBox.hpp" />
+    <ClInclude Include="UIObject.hpp" />
+    <ClInclude Include="UIRectangle.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
