@@ -8,6 +8,9 @@ namespace GUI {
 		m_sf_text.setFont(*m_font);
 	}
 
+	void TextBox::update(sf::Time & dt) {
+	}
+
 	void TextBox::setFont(std::shared_ptr<sf::Font> font) {
 		m_font = font;
 		m_sf_text.setFont(*font);

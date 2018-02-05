@@ -24,34 +24,10 @@
     <ClCompile Include="FileDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="UIObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TextBox.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Box.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FileDialog.hpp">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="UIObject.hpp">
-      <Filter>Header Files\GUI</Filter>
-    </ClInclude>
-    <ClInclude Include="UIRectangle.hpp">
-      <Filter>Header Files\GUI</Filter>
-    </ClInclude>
-    <ClInclude Include="Button.hpp">
-      <Filter>Header Files\GUI</Filter>
-    </ClInclude>
-    <ClInclude Include="TextBox.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Box.hpp">
-      <Filter>Header Files\GUI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

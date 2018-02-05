@@ -15,6 +15,11 @@ namespace GUI {
 		TextBox(sf::RenderWindow & window, std::shared_ptr<sf::Font> font);
 
 		/*
+		Update
+		*/
+		virtual void update(sf::Time & dt);
+
+		/*
 		Set font
 		*/
 		virtual void setFont(std::shared_ptr<sf::Font> font);
@@ -43,7 +48,6 @@ namespace GUI {
 		Draw
 		*/
 		virtual void draw();
-
 	protected:
 		std::shared_ptr<sf::Font> m_font;
 	private:

@@ -8,11 +8,7 @@
 
 #include "FileDialog.hpp"
 
-#include "UIRectangle.hpp"
-
 int main() {
-
-	GUI::UIRectangle rect(100, 100, 100, 100);
 
 	std::cout << "HELLO\n";
 

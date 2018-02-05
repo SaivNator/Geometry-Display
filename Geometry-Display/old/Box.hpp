@@ -15,14 +15,19 @@ namespace GUI {
 		Box(sf::RenderWindow & window, UIRectangle rect);
 
 		/*
-		Resize
+		Update
 		*/
-		virtual void resize(wykobi::vector2d<int> vec);
+		virtual void update(sf::Time & dt) = 0;
 
 		/*
 		Set size
 		*/
 		virtual void setSize(wykobi::vector2d<int> vec);
+
+		/*
+		Set position
+		*/
+		virtual void setPosition(wykobi::point2d<int> p);
 
 		/*
 		Set inner fill color
@@ -35,14 +40,9 @@ namespace GUI {
 		virtual void setOuterColor(sf::Color color);
 
 		/*
-		Move
+		Check if point is inside box
 		*/
-		virtual void move(wykobi::vector2d<int> vec);
-
-		/*
-		Set position
-		*/
-		virtual void setPosition(wykobi::point2d<int> p);
+		virtual bool pointInside(wykobi::point2d<int> & p);
 
 		/*
 		Draw
@@ -50,6 +50,10 @@ namespace GUI {
 		virtual void draw();
 
 	protected:
+		UIRectangle m_bounding_rect;
+		bool m_is_show = true;
+		bool m_is_resizeable = false;
+		bool m_is_moveable = false;
 		bool m_inner_fill = true;
 		sf::Color m_inner_fill_color = sf::Color::White;
 		bool m_outer_line = true;
