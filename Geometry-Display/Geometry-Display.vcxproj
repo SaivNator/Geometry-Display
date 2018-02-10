@@ -19,11 +19,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Button.cpp" />
     <ClCompile Include="FileDialog.cpp" />
+    <ClCompile Include="GUIBase.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="PushButton.cpp" />
+    <ClCompile Include="ToggleButton.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Button.hpp" />
     <ClInclude Include="FileDialog.hpp" />
+    <ClInclude Include="GUIBase.hpp" />
+    <ClInclude Include="PushButton.hpp" />
+    <ClInclude Include="ToggleButton.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
