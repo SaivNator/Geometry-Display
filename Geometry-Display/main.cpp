@@ -6,18 +6,12 @@
 
 #include <wykobi.hpp>
 
-#include "FileDialog.hpp"
+#include "Window.hpp"
 
 int main() {
-
-	std::cout << "HELLO\n";
-
-	FileDialog::OpenFile d;
-
-	d.create();
-
-	d.getPath();
-
+	std::string title = "Window";
+	Window window(sf::VideoMode(1000, 600), title, sf::Style::Default, sf::ContextSettings(sf::ContextSettings::Default));
+	window.join();
 
 	return EXIT_SUCCESS;
 }

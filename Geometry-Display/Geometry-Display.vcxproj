@@ -25,6 +25,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PushButton.cpp" />
     <ClCompile Include="ToggleButton.cpp" />
+    <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Button.hpp" />
@@ -32,6 +33,7 @@
     <ClInclude Include="GUIBase.hpp" />
     <ClInclude Include="PushButton.hpp" />
     <ClInclude Include="ToggleButton.hpp" />
+    <ClInclude Include="Window.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
