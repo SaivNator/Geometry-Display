@@ -15,7 +15,7 @@ namespace GUI {
 		/*
 		Constructor
 		*/
-		Button(sf::RenderWindow & window, std::shared_ptr<sf::Font> font, sf::IntRect rect, sf::Mouse::Button mouse_button);
+		Button(std::shared_ptr<sf::Font> font, sf::IntRect rect, sf::Mouse::Button mouse_button);
 		
 		/*
 		Get text
@@ -25,17 +25,21 @@ namespace GUI {
 		/*
 		Draw
 		*/
-		virtual void draw() override;
+		virtual void draw(sf::RenderWindow & window) override;
 
 		/*
 		Color vars
 		*/
-		sf::Color m_inner_inactive_color;
-		sf::Color m_inner_active_color;
-		sf::Color m_outer_active_color;
-		sf::Color m_outer_inactive_color;
-		sf::Color m_text_inactive_color;
-		sf::Color m_text_active_color;
+		struct Color
+		{
+			sf::Color m_inner_inactive_color = sf::Color::Blue;
+			sf::Color m_inner_active_color = sf::Color::Green;
+			sf::Color m_outer_active_color;
+			sf::Color m_outer_inactive_color;
+			sf::Color m_text_inactive_color;
+			sf::Color m_text_active_color;
+		};
+		Color m_color;
 	protected:
 		sf::IntRect m_rect;
 		bool m_active = false;

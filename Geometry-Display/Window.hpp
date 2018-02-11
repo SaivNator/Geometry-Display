@@ -6,8 +6,13 @@
 
 #include <iostream>
 #include <thread>
+#include <memory>
+#include <functional>
 
 #include <SFML\Graphics.hpp>
+
+#include "PushButton.hpp"
+#include "ToggleButton.hpp"
 
 class Window {
 public:
@@ -30,11 +35,17 @@ private:
 	std::thread m_thread;
 	bool m_running;
 	std::chrono::milliseconds m_sleep_duration;
-	
+	std::vector<std::unique_ptr<GUI::GUIBase>> m_gui_object_vec;
+
 	/*
 	Function for window thread
 	*/
 	void windowHandler(sf::VideoMode mode, const std::string& title, sf::Uint32 style, const sf::ContextSettings& settings);
+
+	/*
+	Function to handle loading objects before main loop
+	*/
+	void loadHandler(sf::RenderWindow & window);
 
 	/*
 	Function to handle window events

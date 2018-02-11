@@ -12,12 +12,12 @@ namespace GUI {
 		/*
 		Constructor
 		*/
-		PushButton(sf::RenderWindow & window, std::shared_ptr<sf::Font> font, sf::IntRect rect, sf::Mouse::Button mouse_button, std::function<void()> func);
+		PushButton(std::shared_ptr<sf::Font> font, sf::IntRect rect, sf::Mouse::Button mouse_button, std::function<void()> func);
 
 		/*
 		Update
 		*/
-		virtual void update(sf::Time & dt) override;
+		virtual void update(sf::RenderWindow & window, sf::Time & dt) override;
 	protected:
 		bool m_bounce = false;
 		std::function<void()> m_func;

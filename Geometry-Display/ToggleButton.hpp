@@ -12,12 +12,12 @@ namespace GUI {
 		/*
 		Constructor
 		*/
-		ToggleButton(sf::RenderWindow & window, std::shared_ptr<sf::Font> font, sf::IntRect rect, sf::Mouse::Button mouse_button, std::function<void(bool)> func);
+		ToggleButton(std::shared_ptr<sf::Font> font, sf::IntRect rect, sf::Mouse::Button mouse_button, std::function<void(bool)> func);
 
 		/*
 		Update
 		*/
-		virtual void update(sf::Time & dt) override;
+		virtual void update(sf::RenderWindow & window, sf::Time & dt) override;
 	protected:
 		bool m_bounce = false;
 		std::function<void(bool)> m_func;

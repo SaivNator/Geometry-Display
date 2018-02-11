@@ -21,7 +21,6 @@
   <ItemGroup>
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="FileDialog.cpp" />
-    <ClCompile Include="GUIBase.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PushButton.cpp" />
     <ClCompile Include="ToggleButton.cpp" />

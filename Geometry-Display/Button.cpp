@@ -2,8 +2,7 @@
 
 namespace GUI {
 
-	Button::Button(sf::RenderWindow & window, std::shared_ptr<sf::Font> font, sf::IntRect rect, sf::Mouse::Button mouse_button) :
-		GUIBase::GUIBase(window),
+	Button::Button(std::shared_ptr<sf::Font> font, sf::IntRect rect, sf::Mouse::Button mouse_button) :
 		m_font(font),
 		m_rect(rect),
 		m_mouse_button(mouse_button),
@@ -17,10 +16,10 @@ namespace GUI {
 		return m_text;
 	}
 
-	void Button::draw() {
-		m_window.draw(m_inner_vertex);
-		m_window.draw(m_outer_vertex);
-		m_window.draw(m_text);
+	void Button::draw(sf::RenderWindow & window) {
+		window.draw(m_inner_vertex);
+		window.draw(m_outer_vertex);
+		window.draw(m_text);
 	}
 
 	void Button::updateDraw() {
@@ -51,14 +50,14 @@ namespace GUI {
 		sf::Color outer_color;
 		sf::Color text_color;
 		if (!m_active) {
-			inner_color = m_inner_inactive_color;
-			outer_color = m_outer_inactive_color;
-			text_color = m_text_inactive_color;
+			inner_color = m_color.m_inner_inactive_color;
+			outer_color = m_color.m_outer_inactive_color;
+			text_color = m_color.m_text_inactive_color;
 		}
 		else {
-			inner_color = m_inner_active_color;
-			outer_color = m_outer_active_color;
-			text_color = m_text_active_color;
+			inner_color = m_color.m_inner_active_color;
+			outer_color = m_color.m_outer_active_color;
+			text_color = m_color.m_text_active_color;
 		}
 
 		m_inner_vertex[0].color = inner_color;

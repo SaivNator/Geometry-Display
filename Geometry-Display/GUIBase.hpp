@@ -10,22 +10,17 @@ namespace GUI {
 	class GUIBase {
 	public:
 		/*
-		Constructor
-		*/
-		GUIBase(sf::RenderWindow & window);
-
-		/*
 		Update
 		*/
-		virtual void update(sf::Time & dt) = 0;
+		virtual void update(sf::RenderWindow & window, sf::Time & dt) = 0;
 
 		/*
 		Draw
 		*/
-		virtual void draw() = 0;
+		virtual void draw(sf::RenderWindow & window) = 0;
 
 	protected:
-		sf::RenderWindow & m_window;
+		
 	};
 }
 
