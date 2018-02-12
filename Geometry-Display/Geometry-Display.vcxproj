@@ -30,6 +30,7 @@
     <ClInclude Include="Button.hpp" />
     <ClInclude Include="FileDialog.hpp" />
     <ClInclude Include="GUIBase.hpp" />
+    <ClInclude Include="ListMenu.hpp" />
     <ClInclude Include="PushButton.hpp" />
     <ClInclude Include="ToggleButton.hpp" />
     <ClInclude Include="Window.hpp" />

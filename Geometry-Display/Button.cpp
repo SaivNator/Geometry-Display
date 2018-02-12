@@ -2,10 +2,11 @@
 
 namespace GUI {
 
-	Button::Button(std::shared_ptr<sf::Font> font, sf::IntRect rect, sf::Mouse::Button mouse_button) :
+	Button::Button(std::shared_ptr<sf::Font> font, sf::IntRect rect, sf::Mouse::Button mouse_button, Color color) :
 		m_font(font),
 		m_rect(rect),
 		m_mouse_button(mouse_button),
+		m_color(color),
 		m_inner_vertex(sf::Triangles, 6),
 		m_outer_vertex(sf::LineStrip, 5)
 	{
@@ -16,10 +17,22 @@ namespace GUI {
 		return m_text;
 	}
 
-	void Button::draw(sf::RenderWindow & window) {
+	void Button::draw(sf::RenderWindow & window, sf::Time & dt) {
 		window.draw(m_inner_vertex);
 		window.draw(m_outer_vertex);
 		window.draw(m_text);
+	}
+
+	sf::IntRect & Button::getRect() {
+		return m_rect;
+	}
+
+	Button::Color & Button::getColor() {
+		return m_color;
+	}
+
+	sf::Mouse::Button & Button::getMouseButton() {
+		return m_mouse_button;
 	}
 
 	void Button::updateDraw() {

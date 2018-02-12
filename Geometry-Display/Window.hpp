@@ -60,7 +60,7 @@ private:
 	/*
 	Function to handle draw calls
 	*/
-	void drawHandler(sf::RenderWindow & window);
+	void drawHandler(sf::RenderWindow & window, sf::Time & dt);
 };
 
 #endif // !Window_HEADER

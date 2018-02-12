@@ -4,8 +4,8 @@
 
 namespace GUI {
 
-	PushButton::PushButton(std::shared_ptr<sf::Font> font, sf::IntRect rect, sf::Mouse::Button mouse_button, std::function<void()> func) :
-		Button(font, rect, mouse_button),
+	PushButton::PushButton(std::shared_ptr<sf::Font> font, sf::IntRect rect, std::function<void()> func, sf::Mouse::Button mouse_button, Color color) :
+		Button(font, rect, mouse_button, color),
 		m_func(func)
 	{
 	}
@@ -30,6 +30,10 @@ namespace GUI {
 				updateDraw();
 			}
 		}
+	}
+
+	void PushButton::setFunction(std::function<void()> func) {
+		m_func = func;
 	}
 
 }

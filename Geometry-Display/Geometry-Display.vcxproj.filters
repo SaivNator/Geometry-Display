@@ -56,5 +56,8 @@
     <ClInclude Include="Window.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ListMenu.hpp">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

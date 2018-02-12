@@ -2,8 +2,8 @@
 
 namespace GUI {
 
-	ToggleButton::ToggleButton(std::shared_ptr<sf::Font> font, sf::IntRect rect, sf::Mouse::Button mouse_button, std::function<void(bool)> func) :
-		Button(font, rect, mouse_button),
+	ToggleButton::ToggleButton(std::shared_ptr<sf::Font> font, sf::IntRect rect, std::function<void(bool)> func, sf::Mouse::Button mouse_button, Color color) :
+		Button(font, rect, mouse_button, color),
 		m_func(func)
 	{
 	}
@@ -23,6 +23,10 @@ namespace GUI {
 				updateDraw();
 			}
 		}
+	}
+
+	void ToggleButton::setFunction(std::function<void(bool)> func) {
+		m_func = func;
 	}
 
 }

@@ -17,7 +17,7 @@ namespace GUI {
 		/*
 		Draw
 		*/
-		virtual void draw(sf::RenderWindow & window) = 0;
+		virtual void draw(sf::RenderWindow & window, sf::Time & dt) = 0;
 
 	protected:
 		
