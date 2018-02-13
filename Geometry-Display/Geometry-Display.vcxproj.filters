@@ -36,6 +36,12 @@
     <ClCompile Include="Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ListMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Primitive.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FileDialog.hpp">
@@ -57,6 +63,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ListMenu.hpp">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Primitive.hpp">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
   </ItemGroup>

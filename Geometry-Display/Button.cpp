@@ -2,14 +2,16 @@
 
 namespace GUI {
 
-	Button::Button(std::shared_ptr<sf::Font> font, sf::IntRect rect, sf::Mouse::Button mouse_button, Color color) :
+	Button::Button(std::shared_ptr<sf::Font> font, sf::IntRect rect, sf::Mouse::Button mouse_button, Color color, String string) :
 		m_font(font),
 		m_rect(rect),
 		m_mouse_button(mouse_button),
 		m_color(color),
-		m_inner_vertex(sf::Triangles, 6),
-		m_outer_vertex(sf::LineStrip, 5)
+		m_string(string),
+		m_inner_rect(rect, m_color.m_inner_inactive_color),
+		m_outer_rect(rect, m_color.m_outer_inactive_color)
 	{
+		m_text.setFont(*font);
 		updateDraw();
 	}
 
@@ -18,9 +20,13 @@ namespace GUI {
 	}
 
 	void Button::draw(sf::RenderWindow & window, sf::Time & dt) {
-		window.draw(m_inner_vertex);
-		window.draw(m_outer_vertex);
+		window.draw(m_inner_rect);
+		window.draw(m_outer_rect);
 		window.draw(m_text);
+	}
+
+	void Button::setMouseButton(sf::Mouse::Button button) {
+		m_mouse_button = button;
 	}
 
 	sf::IntRect & Button::getRect() {
@@ -31,61 +37,41 @@ namespace GUI {
 		return m_color;
 	}
 
-	sf::Mouse::Button & Button::getMouseButton() {
-		return m_mouse_button;
+	Button::String & Button::getString() {
+		return m_string;
 	}
 
 	void Button::updateDraw() {
 		sf::Vector2f p(static_cast<float>(m_rect.left), static_cast<float>(m_rect.top));
 		sf::Vector2f s(static_cast<float>(m_rect.width), static_cast<float>(m_rect.height));
-
-		sf::Vector2f p0(p);
-		sf::Vector2f p1(p.x + s.x, p.y);
-		sf::Vector2f p2(p + s);
-		sf::Vector2f p3(p.x, p.y + s.y);
-
-		m_inner_vertex[0].position = p0;
-		m_inner_vertex[1].position = p1;
-		m_inner_vertex[2].position = p2;
-		m_inner_vertex[3].position = p0;
-		m_inner_vertex[4].position = p2;
-		m_inner_vertex[5].position = p3;
-
-		m_outer_vertex[0].position = p0;
-		m_outer_vertex[1].position = p1;
-		m_outer_vertex[2].position = p2;
-		m_outer_vertex[3].position = p3;
-		m_outer_vertex[4].position = p0;
-
-		m_text.setPosition(s);
-
+		m_inner_rect.setRect(m_rect);
+		m_outer_rect.setRect(m_rect);
 		sf::Color inner_color;
 		sf::Color outer_color;
 		sf::Color text_color;
+		std::string text_string;
 		if (!m_active) {
 			inner_color = m_color.m_inner_inactive_color;
 			outer_color = m_color.m_outer_inactive_color;
 			text_color = m_color.m_text_inactive_color;
+			text_string = m_string.m_inactive_string;
 		}
 		else {
 			inner_color = m_color.m_inner_active_color;
 			outer_color = m_color.m_outer_active_color;
 			text_color = m_color.m_text_active_color;
+			text_string = m_string.m_active_string;
 		}
-
-		m_inner_vertex[0].color = inner_color;
-		m_inner_vertex[1].color = inner_color;
-		m_inner_vertex[2].color = inner_color;
-		m_inner_vertex[3].color = inner_color;
-		m_inner_vertex[4].color = inner_color;
-		m_inner_vertex[5].color = inner_color;
-
-		m_outer_vertex[0].color = outer_color;
-		m_outer_vertex[1].color = outer_color;
-		m_outer_vertex[2].color = outer_color;
-		m_outer_vertex[3].color = outer_color;
-		m_outer_vertex[4].color = outer_color;
-
+		m_inner_rect.setColor(inner_color);
+		m_outer_rect.setColor(outer_color);
 		m_text.setFillColor(text_color);
+		m_text.setString(text_string);
+		
+		//arrange text inside rect
+		
+		sf::FloatRect textRect = m_text.getLocalBounds();
+		m_text.setOrigin(textRect.left + textRect.width / 2.f,
+			textRect.top + textRect.height / 2.f);
+		m_text.setPosition(p + (s / 2.f));
 	}
 }

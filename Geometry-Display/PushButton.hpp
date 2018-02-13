@@ -16,7 +16,8 @@ namespace GUI {
 			sf::IntRect rect, 
 			std::function<void()> func = []() {} ,
 			sf::Mouse::Button mouse_button = sf::Mouse::Left, 
-			Color color = Color()
+			Color color = Color(),
+			String string = String()
 		);
 
 		/*

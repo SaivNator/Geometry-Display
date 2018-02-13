@@ -2,8 +2,8 @@
 
 namespace GUI {
 
-	ToggleButton::ToggleButton(std::shared_ptr<sf::Font> font, sf::IntRect rect, std::function<void(bool)> func, sf::Mouse::Button mouse_button, Color color) :
-		Button(font, rect, mouse_button, color),
+	ToggleButton::ToggleButton(std::shared_ptr<sf::Font> font, sf::IntRect rect, std::function<void(bool)> func, sf::Mouse::Button mouse_button, Color color, String string) :
+		Button(font, rect, mouse_button, color, string),
 		m_func(func)
 	{
 	}

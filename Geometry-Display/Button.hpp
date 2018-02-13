@@ -4,10 +4,13 @@
 #ifndef Button_HEADER
 #define Button_HEADER
 
+#include <iostream>
+
 #include <memory>
 #include <functional>
 
 #include "GUIBase.hpp"
+#include "Primitive.hpp"
 
 namespace GUI {
 	class Button : public GUIBase {
@@ -20,17 +23,26 @@ namespace GUI {
 			sf::Color m_text_inactive_color = sf::Color::Black;
 			sf::Color m_text_active_color = sf::Color::Black;
 		};
+		struct String {
+			std::string m_inactive_string;
+			std::string m_active_string;
+		};
 
 		/*
 		Constructor
 		*/
-		Button(std::shared_ptr<sf::Font> font, sf::IntRect rect, sf::Mouse::Button mouse_button, Color color);
+		Button(std::shared_ptr<sf::Font> font, sf::IntRect rect, sf::Mouse::Button mouse_button, Color color, String string);
 		
 		/*
 		Draw
 		*/
 		virtual void draw(sf::RenderWindow & window, sf::Time & dt) override;
 		
+		/*
+		Set mouse button
+		*/
+		void setMouseButton(sf::Mouse::Button button);
+
 		/*
 		Get text
 		*/
@@ -47,9 +59,9 @@ namespace GUI {
 		Color & getColor();
 
 		/*
-		Get mouse button
+		Get String
 		*/
-		sf::Mouse::Button & getMouseButton();
+		String & getString();
 		
 		/*
 		Update draw objects
@@ -60,10 +72,11 @@ namespace GUI {
 		bool m_active = false;
 		sf::Mouse::Button m_mouse_button;
 		std::shared_ptr<sf::Font> m_font;
-		sf::VertexArray m_inner_vertex;
-		sf::VertexArray m_outer_vertex;
+		Primitive::FillRect m_inner_rect;
+		Primitive::LineRect m_outer_rect;
 		sf::Text m_text;
 		Color m_color;
+		String m_string;
 	};
 }
 

@@ -4,18 +4,14 @@
 
 namespace GUI {
 
-	PushButton::PushButton(std::shared_ptr<sf::Font> font, sf::IntRect rect, std::function<void()> func, sf::Mouse::Button mouse_button, Color color) :
-		Button(font, rect, mouse_button, color),
+	PushButton::PushButton(std::shared_ptr<sf::Font> font, sf::IntRect rect, std::function<void()> func, sf::Mouse::Button mouse_button, Color color, String string) :
+		Button(font, rect, mouse_button, color, string),
 		m_func(func)
 	{
 	}
 
 	void PushButton::update(sf::RenderWindow & window, sf::Time & dt) {
-		
-		
-		
 		if (sf::Mouse::isButtonPressed(m_mouse_button) && m_rect.contains(sf::Mouse::getPosition(window))) {
-			
 			if (!m_bounce) {
 				m_active = true;
 				m_bounce = true;

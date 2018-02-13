@@ -64,6 +64,7 @@ void Window::loadHandler(sf::RenderWindow & window) {
 	temp.setFunction([](bool v) {std::cout << "fuck\n"; });
 	temp.getColor().m_inner_inactive_color = sf::Color::Red;
 	temp.getColor().m_inner_active_color = sf::Color::Cyan;
+	temp.getString().m_inactive_string = "inactive";
 	temp.updateDraw();
 
 	m_gui_object_vec.push_back(
@@ -78,6 +79,9 @@ void Window::eventHandler(sf::RenderWindow & window) {
 		switch (e.type) {
 		case sf::Event::Closed:
 			m_running = false;
+			break;
+		case sf::Event::Resized:
+			window.setView(sf::View(sf::FloatRect(0.f, 0.f, static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y))));
 			break;
 		default:
 			break;

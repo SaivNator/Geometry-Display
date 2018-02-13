@@ -21,7 +21,9 @@
   <ItemGroup>
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="FileDialog.cpp" />
+    <ClCompile Include="ListMenu.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Primitive.cpp" />
     <ClCompile Include="PushButton.cpp" />
     <ClCompile Include="ToggleButton.cpp" />
     <ClCompile Include="Window.cpp" />
@@ -31,6 +33,7 @@
     <ClInclude Include="FileDialog.hpp" />
     <ClInclude Include="GUIBase.hpp" />
     <ClInclude Include="ListMenu.hpp" />
+    <ClInclude Include="Primitive.hpp" />
     <ClInclude Include="PushButton.hpp" />
     <ClInclude Include="ToggleButton.hpp" />
     <ClInclude Include="Window.hpp" />

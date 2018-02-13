@@ -7,8 +7,15 @@ namespace GUI {
 		m_color(Color())
 	{
 	}
+	void ListMenu::update(sf::RenderWindow & window, sf::Time & dt)
+	{
+	}
 	void GUI::ListMenu::draw(sf::RenderWindow & window, sf::Time & dt) {
 		
+	}
+
+	void ListMenu::updateDraw()
+	{
 	}
 
 	

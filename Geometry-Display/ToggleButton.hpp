@@ -16,7 +16,8 @@ namespace GUI {
 			std::shared_ptr<sf::Font> font,
 			sf::IntRect rect, std::function<void(bool)> func = [](bool) {} ,
 			sf::Mouse::Button mouse_button = sf::Mouse::Left, 
-			Color color = Color()
+			Color color = Color(),
+			String string = String()
 		);
 
 		/*
