@@ -46,32 +46,25 @@ namespace GUI {
 		sf::Vector2f s(static_cast<float>(m_rect.width), static_cast<float>(m_rect.height));
 		m_inner_rect.setRect(m_rect);
 		m_outer_rect.setRect(m_rect);
-		sf::Color inner_color;
-		sf::Color outer_color;
-		sf::Color text_color;
-		std::string text_string;
+		
 		if (!m_active) {
-			inner_color = m_color.m_inner_inactive_color;
-			outer_color = m_color.m_outer_inactive_color;
-			text_color = m_color.m_text_inactive_color;
-			text_string = m_string.m_inactive_string;
+			m_inner_rect.setColor(m_color.m_inner_inactive_color);
+			m_outer_rect.setColor(m_color.m_outer_inactive_color);
+			m_text.setFillColor(m_color.m_text_inactive_color);
+			m_text.setString(m_string.m_inactive_string);
+			m_text.setCharacterSize(m_string.m_inactive_char_size);
 		}
 		else {
-			inner_color = m_color.m_inner_active_color;
-			outer_color = m_color.m_outer_active_color;
-			text_color = m_color.m_text_active_color;
-			text_string = m_string.m_active_string;
+			m_inner_rect.setColor(m_color.m_inner_active_color);
+			m_outer_rect.setColor(m_color.m_outer_active_color);
+			m_text.setFillColor(m_color.m_text_active_color);
+			m_text.setString(m_string.m_active_string);
+			m_text.setCharacterSize(m_string.m_active_char_size);
 		}
-		m_inner_rect.setColor(inner_color);
-		m_outer_rect.setColor(outer_color);
-		m_text.setFillColor(text_color);
-		m_text.setString(text_string);
 		
 		//arrange text inside rect
-		
 		sf::FloatRect textRect = m_text.getLocalBounds();
-		m_text.setOrigin(textRect.left + textRect.width / 2.f,
-			textRect.top + textRect.height / 2.f);
+		m_text.setOrigin(textRect.left + textRect.width / 2.f, textRect.top + textRect.height / 2.f);
 		m_text.setPosition(p + (s / 2.f));
 	}
 }

@@ -8,6 +8,7 @@
 #include <functional>
 
 #include "GUIBase.hpp"
+#include "PushButton.hpp"
 
 namespace GUI {
 	class ListMenu : public GUIBase {
@@ -19,31 +20,19 @@ namespace GUI {
 			sf::Color m_element_active_text_color;
 		};
 
-		struct Element {
+		struct Element : public PushButton {
 			/*
 			Constructor
 			*/
-			Element() :
-				m_title("<insert text>"),
-				m_func([]() {}),
-				m_inner_vertex(sf::Triangles, 6),
-				m_outer_vertex(sf::LineStrip, 5)
-			{
-			}			
+			//Element() :
+			//	PushButton::PushButton()
+			//{
+			//}			
 
-			/*
-			Update draw
-			*/
-			void updateDraw(sf::IntRect rect);
+			
 
-
-			std::string m_title;
-			std::function<void()> m_func;
-
-			sf::VertexArray m_inner_vertex;
-			sf::VertexArray m_outer_vertex;
-			sf::Text m_text;
-
+			
+			
 		};
 
 		/*

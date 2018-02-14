@@ -73,7 +73,7 @@ namespace GUI {
 			/*
 			Constructor
 			*/
-			FillRect(sf::IntRect rect, sf::Color color);
+			FillRect(sf::IntRect rect = sf::IntRect(), sf::Color color = sf::Color());
 		protected:
 			sf::VertexArray m_vertex;
 
@@ -86,7 +86,7 @@ namespace GUI {
 			/*
 			Constructor
 			*/
-			LineRect(sf::IntRect rect, sf::Color color);
+			LineRect(sf::IntRect rect = sf::IntRect(), sf::Color color = sf::Color());
 		protected:
 			sf::VertexArray m_vertex;
 

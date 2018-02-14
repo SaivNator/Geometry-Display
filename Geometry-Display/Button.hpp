@@ -26,6 +26,8 @@ namespace GUI {
 		struct String {
 			std::string m_inactive_string;
 			std::string m_active_string;
+			unsigned int m_inactive_char_size = 16;
+			unsigned int m_active_char_size = 16;
 		};
 
 		/*
